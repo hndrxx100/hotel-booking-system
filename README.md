@@ -32,7 +32,7 @@ An advanced web application for managing hotel room bookings, built with **Flask
 |------------|--------------------|
 | Backend    | Python (Flask)     |
 | Database   | MySQL + SQLAlchemy |
-| Frontend   | HTML5, CSS3, Bootstrap |
+| Frontend   | HTML5, TailwindCSS, JS |
 | Charts     | Chart.js           |
 | Auth       | Flask-Login        |
 | Email      | Flask-Mail         |
@@ -54,8 +54,8 @@ project/
 │   │   └── ...
 ├── config.py
 ├── run.py
+|── test.py
 └── requirements.txt
-
 ```
 
 ## ⚙️ Setup Instructions
@@ -121,4 +121,4 @@ This project is open-source under the [MIT License](LICENSE).
 
 ## 🙌 Contributors
 
-- [Johnson-Akwaboah](https://github.com/) – Full Stack Developer
+- [Johnson-Akwaboah](https://github.com/) – Backend Developer

@@ -8,7 +8,7 @@
 # init_db.py or test.py
 
 from app import app, db
-from app.models import User, Room, Booking, Payment
+from app.models import User
 from werkzeug.security import generate_password_hash
 
 with app.app_context():
@@ -17,7 +17,7 @@ with app.app_context():
     
 
     admin = User(
-        name="Admin User",
+        username="Admin User",
         email="admin@example.com",
         password_hash=generate_password_hash("admin123"),
         role="admin"

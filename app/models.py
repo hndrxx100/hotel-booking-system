@@ -1,9 +1,12 @@
-# app/models.py
 from app import db
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
 
+
 class Guest(db.Model):
+    __tablename__ = 'guest'
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -14,6 +17,7 @@ class Guest(db.Model):
 
 
 class Room(db.Model):
+    __tablename__ = 'room'
     id = db.Column(db.Integer, primary_key=True)
     room_number = db.Column(db.String(10), unique=True, nullable=False)
     room_type = db.Column(db.String(50), nullable=False)  # e.g. Single, Double
@@ -25,6 +29,7 @@ class Room(db.Model):
 
 
 class Booking(db.Model):
+    __tablename__ = 'booking'
     id = db.Column(db.Integer, primary_key=True)
     guest_id = db.Column(db.Integer, db.ForeignKey('guest.id'), nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
@@ -38,6 +43,7 @@ class Booking(db.Model):
 
 
 class Payment(db.Model):
+    __tablename__ = 'payment'
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
@@ -46,17 +52,29 @@ class Payment(db.Model):
     is_successful = db.Column(db.Boolean, default=True)
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password_hash = db.Column(db.String(512), nullable=False)
     role = db.Column(db.String(20), nullable=False)  # Admin or Receptionist
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     check_logs = db.relationship('CheckLog', backref='user', lazy=True)
+    
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def get_id(self):
+        return str(self.user_id)
 
 
 class CheckLog(db.Model):
+    __tablename__ = 'check_log'
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
     action = db.Column(db.String(20), nullable=False)  # checkin or checkout
