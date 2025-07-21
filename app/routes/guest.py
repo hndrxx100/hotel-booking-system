@@ -1,10 +1,38 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import login_required, current_user
 from app import db
 from app.models import Room, Guest, Booking, Payment, CheckLog
 from datetime import datetime
 
-bp = Blueprint('guest', __name__, url_prefix='/guest')
+bp = Blueprint('guest', __name__)
+
+@bp.route('/')
+def index():
+    from app.models import Room
+    room_type = request.args.get('type')
+    max_price = request.args.get('price')
+    status = request.args.get('status')
+    sort = request.args.get('sort')
+
+    query = Room.query
+
+    if room_type:
+        query = query.filter(Room.type.ilike(f"%{room_type}%"))
+    if max_price:
+        query = query.filter(Room.price <= float(max_price))
+    if status:
+        query = query.filter_by(status=status)
+
+    if sort == 'price_asc':
+        query = query.order_by(Room.price.asc())
+    elif sort == 'price_desc':
+        query = query.order_by(Room.price.desc())
+
+    rooms = query.all()
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template('partials/room_list.html', rooms=rooms)
+
+    return render_template('index.html', rooms=rooms)
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register_guest():
@@ -22,13 +50,13 @@ def register_guest():
             db.session.commit()
             flash('Guest registered successfully!', 'success')
             return redirect(url_for('guest.view_rooms'))
-    return render_template('guest/register.html')
+    return render_template('register.html')
 
 @bp.route('/rooms')
 def view_rooms():
     # View available rooms (FR1) - accessible without login
     rooms = Room.query.filter_by(is_available=True).all()
-    return render_template('guest/rooms.html', rooms=rooms)
+    return render_template('rooms.html', rooms=rooms)
 
 @bp.route('/book/<int:room_id>', methods=['GET', 'POST'])
 def book_room(room_id):
@@ -47,7 +75,7 @@ def book_room(room_id):
         if room.is_available:
             check_in = datetime.strptime(request.form['check_in'], '%Y-%m-%d').date()
             check_out = datetime.strptime(request.form['check_out'], '%Y-%m-%d').date()
-            if check_in < datetime.utcnow().date() or check_out <= check_in:
+            if check_in < datetime.now().date() or check_out <= check_in:
                 flash('Invalid dates.', 'danger')
             else:
                 booking = Booking(
@@ -66,14 +94,14 @@ def book_room(room_id):
                 # Placeholder for email confirmation (FR3)
                 return redirect(url_for('guest.dashboard', guest_id=guest.id))
         flash('Room not available.', 'danger')
-    return render_template('guest/book.html', room=room)
+    return render_template('book.html', room=room)
 
 @bp.route('/dashboard/<int:guest_id>')
 def dashboard(guest_id):
     # Display guest's bookings (requires guest ID)
     guest = Guest.query.get_or_404(guest_id)
     bookings = Booking.query.filter_by(guest_id=guest.id).all()
-    return render_template('guest/dashboard.html', guest=guest, bookings=bookings)
+    return render_template('dashboard.html', guest=guest, bookings=bookings)
 
 @bp.route('/cancel/<int:booking_id>', methods=['POST'])
 def cancel_booking(booking_id):
@@ -96,7 +124,7 @@ def modify_booking(booking_id):
     if request.method == 'POST' and booking.status in ['Pending', 'Paid']:
         new_check_in = datetime.strptime(request.form['check_in'], '%Y-%m-%d').date()
         new_check_out = datetime.strptime(request.form['check_out'], '%Y-%m-%d').date()
-        if new_check_in < datetime.utcnow().date() or new_check_out <= new_check_in:
+        if new_check_in < datetime.now().date() or new_check_out <= new_check_in:
             flash('Invalid dates.', 'danger')
         else:
             booking.check_in_date = new_check_in

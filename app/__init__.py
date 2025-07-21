@@ -18,7 +18,7 @@ stripe.api_key = app.config['STRIPE_SECRET_KEY']
 
 from app.routes import auth, admin, guest
 app.register_blueprint(auth.bp)
-app.register_blueprint(guest.bp, url_prefix='/guest')
+app.register_blueprint(guest.bp)
 app.register_blueprint(admin.bp, url_prefix="/admin")
 
 
