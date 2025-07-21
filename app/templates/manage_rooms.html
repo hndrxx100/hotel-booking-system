@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Rooms - Pelican Hotel{% endblock %}
+
+{% block content %}
+<section class="text-center mb-10">
+  <h1 class="text-4xl font-bold text-blue-700 mb-2">Manage Rooms</h1>
+  <p class="text-gray-600 text-lg">Add new rooms and view existing ones.</p>
+</section>
+
+<!-- Add Room Form -->
+<section class="bg-white p-6 rounded-xl shadow mb-10 mx-auto max-w-2xl">
+  <form id="add-room-form" class="space-y-4">
+    <input type="text" name="room_number" placeholder="Room Number" class="w-full border p-3 rounded" required>
+
+    <select name="room_type" class="w-full border p-3 rounded" required>
+      <option value="">Select Room Type</option>
+      <option value="Standard">Standard</option>
+      <option value="Deluxe">Deluxe</option>
+      <option value="Executive">Executive</option>
+    </select>
+
+    <input type="number" name="price" placeholder="Price per Night (GHS)" class="w-full border p-3 rounded" required>
+
+    <textarea name="description" placeholder="Room Description" class="w-full border p-3 rounded h-24"></textarea>
+
+    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700 transition">Add Room</button>
+  </form>
+</section>
+
+<!-- Room List -->
+<section>
+  <h2 class="text-2xl font-semibold text-blue-700 mb-4">Existing Rooms</h2>
+  <div id="room-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- JS will populate rooms here -->
+  </div>
+</section>
+{% endblock %}

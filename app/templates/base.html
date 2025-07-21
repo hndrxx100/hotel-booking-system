@@ -1,0 +1,69 @@
+<!-- app/templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Pelican Hotel{% endblock %}</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+<!-- Navbar -->
+<header class="bg-blue-50 shadow sticky top-0 z-50">
+  <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+    <a href="{{ url_for('main.index') }}" class="text-2xl font-bold text-blue-700">Pelican Hotel</a>
+    <nav class="space-x-2 sm:space-x-4 text-sm sm:text-base">
+      <a href="{{ url_for('main.index') }}"
+         class="px-3 py-1 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'main.index' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
+         Home
+      </a>
+      <a href="{{ url_for('main.rooms') }}"
+         class="px-3 py-1 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'main.rooms' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
+         Rooms
+      </a>
+      <a href="{{ url_for('main.booking') }}"
+         class="px-3 py-1 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'main.booking' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
+         Book Now
+      </a>
+      <a href="{{ url_for('main.login') }}"
+         class="px-3 py-1 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'main.login' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
+         Login
+      </a>
+    </nav>
+  </div>
+</header>
+
+    <!-- Flash messages (for later use) -->
+    <div class="container mx-auto px-6 mt-4">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="bg-yellow-100 text-yellow-800 p-4 rounded mb-4">
+              {% for message in messages %}
+                <p>{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-10 min-h-[70vh]">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-blue-800 text-white text-center py-4 mt-12">
+        <p>&copy; {{ now.year if now else "2025" }} Pelican Hotel. All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/alpine.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modalBooking.js') }}"></script>
+</body>
+</html>
