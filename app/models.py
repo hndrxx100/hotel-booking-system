@@ -1,6 +1,8 @@
 # app/models.py
 from app import db
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+from app.extensions import db              # ✅ updated import
 
 
 class Guest(db.Model):
@@ -12,6 +14,12 @@ class Guest(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     bookings = db.relationship('Booking', backref='guest', lazy=True)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 
 class Room(db.Model):
@@ -55,6 +63,12 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     check_logs = db.relationship('CheckLog', backref='user', lazy=True)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 
 class CheckLog(db.Model):

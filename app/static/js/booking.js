@@ -38,39 +38,49 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Form submit logic
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
+// Form submit logic
+form.addEventListener("submit", async function (e) {
+  e.preventDefault();
 
-    const checkinDate = checkIn.value;
-    const checkoutDate = checkOut.value;
+  const checkinDate = checkIn.value;
+  const checkoutDate = checkOut.value;
 
-    if (!checkinDate || !checkoutDate) {
-      alert("Please select both check-in and check-out dates.");
-      return;
+  if (!checkinDate || !checkoutDate) {
+    alert("Please select both check-in and check-out dates.");
+    return;
+  }
+
+  if (checkoutDate <= checkinDate) {
+    alert("Check-out date must be after check-in date.");
+    return;
+  }
+
+  try {
+    spinner.classList.remove("hidden");
+    roomsContainer.innerHTML = "";
+
+    const response = await fetch(`/get_available_rooms?checkin=${checkinDate}&checkout=${checkoutDate}`);
+    const data = await response.json();
+    availableRooms = data.rooms;
+
+    // 🔥 Get the current active category tab
+    const activeTab = document.querySelector(".category-tab.active-tab");
+    const activeCategory = activeTab ? activeTab.textContent.trim() : null;
+
+    if (activeCategory) {
+      renderRoomsByCategory(activeCategory);
+    } else {
+      // fallback if no tab is selected
+      roomsContainer.innerHTML = `<p class="text-gray-500 text-center col-span-full">Please select a room category.</p>`;
     }
+  } catch (error) {
+    console.error("Error fetching rooms:", error);
+    roomsContainer.innerHTML = `<p class="text-red-500 text-center col-span-full">Error loading rooms. Try again later.</p>`;
+  } finally {
+    spinner.classList.add("hidden");
+  }
+});
 
-    if (checkoutDate <= checkinDate) {
-      alert("Check-out date must be after check-in date.");
-      return;
-    }
-
-    try {
-      spinner.classList.remove("hidden");
-      roomsContainer.innerHTML = "";
-
-      const response = await fetch(`/get_available_rooms?checkin=${checkinDate}&checkout=${checkoutDate}`);
-      const data = await response.json();
-      availableRooms = data.rooms;
-
-      renderRoomsByCategory("Standard");
-    } catch (error) {
-      console.error("Error fetching rooms:", error);
-      roomsContainer.innerHTML = `<p class="text-red-500 text-center col-span-full">Error loading rooms. Try again later.</p>`;
-    } finally {
-      spinner.classList.add("hidden"); // Always hide spinner whether success or error
-    }
-  });
 
   function renderRoomsByCategory(category) {
     const filtered = availableRooms.filter(room => room.category === category);
