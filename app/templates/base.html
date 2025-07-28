@@ -1,4 +1,3 @@
-<!-- app/templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,126 +7,128 @@
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Flatpickr CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Socket.IO CDN -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <!-- Alpine.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans">
-
+<body class="bg-gray-900 text-white font-sans">
 <!-- Navbar -->
-<header class="bg-blue-50 shadow sticky top-0 z-50" x-data="{ mobileOpen: false }">
+<header class="bg-gray-800 shadow sticky top-0 z-50" x-data="{ mobileOpen: false }" x-init="mobileOpen = false">
   <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-    <a href="{{ url_for('main.index') }}" class="text-2xl font-bold text-blue-700">Pelican Hotel</a>
+    <a href="{{ url_for('main.index') }}" class="text-2xl font-bold text-blue-400 hover:text-blue-300 transition">Pelican Hotel</a>
 
     <!-- Mobile Menu Button -->
-    <button @click="mobileOpen = !mobileOpen" class="sm:hidden text-blue-700 focus:outline-none">
-      <svg x-show="!mobileOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-           viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"/>
+    <button @click="mobileOpen = !mobileOpen" class="sm:hidden text-blue-400 focus:outline-none" aria-label="Toggle mobile menu">
+      <svg x-show="!mobileOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
       </svg>
-      <svg x-show="mobileOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-           viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"/>
+      <svg x-show="mobileOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
       </svg>
     </button>
 
-    <!-- Desktop Nav -->
-    <nav class="hidden sm:flex space-x-2 sm:space-x-4 text-sm sm:text-base">
-      <a href="{{ url_for('main.index') }}"
-         class="px-3 py-1 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'main.index' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
-         Home
-      </a>
-      <a href="{{ url_for('main.rooms') }}"
-         class="px-3 py-1 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'main.rooms' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
-         Rooms
-      </a>
-      <a href="{{ url_for('main.booking') }}"
-         class="px-3 py-1 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'main.booking' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
-         Book Now
-      </a>
-      {% if session.get('role') %}
-        <a href="{{ url_for('auth.logout') }}"
-           class="px-3 py-1 rounded-full bg-red-100 text-red-700 font-semibold hover:bg-red-200 transition">
-           Logout
+    <!-- Desktop Nav (role-based) -->
+    <nav class="hidden sm:flex space-x-4 text-sm">
+      {% if session.get('role') == 'receptionist' %}
+        <a href="{{ url_for('receptionist.logout') }}"
+           class="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition flex items-center gap-2" aria-label="Logout">
+          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h3a3 3 0 013 3v1"/>
+          </svg>
+          <span>Logout</span>
         </a>
       {% else %}
-        <a href="{{ url_for('auth.guest_login') }}"
-           class="px-3 py-1 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'auth.guest_login' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
-           Login
-        </a>
+        <a href="{{ url_for('main.index') }}"
+           class="px-4 py-2 rounded-lg {% if request.endpoint == 'main.index' %}bg-blue-600 text-white font-semibold{% else %}text-gray-300 hover:bg-blue-600 hover:text-white transition{% endif %}" aria-label="Home">Home</a>
+        <a href="{{ url_for('main.booking') }}"
+           class="px-4 py-2 rounded-lg {% if request.endpoint == 'main.booking' %}bg-blue-600 text-white font-semibold{% else %}text-gray-300 hover:bg-blue-600 hover:text-white transition{% endif %}" aria-label="Book Now">Book Now</a>
+        <a href="{{ url_for('main.manage_booking') }}"
+           class="px-4 py-2 rounded-lg {% if request.endpoint == 'main.manage_booking' %}bg-blue-600 text-white font-semibold{% else %}text-gray-300 hover:bg-blue-600 hover:text-white transition{% endif %}" aria-label="Manage Booking">Manage Booking</a>
+        <a href="{{ url_for('receptionist.login') }}"
+           class="px-4 py-2 rounded-lg {% if request.endpoint == 'receptionist.login' %}bg-blue-600 text-white font-semibold{% else %}text-gray-300 hover:bg-blue-600 hover:text-white transition{% endif %}" aria-label="Login">Login</a>
       {% endif %}
     </nav>
   </div>
 
-  <!-- Mobile Nav (toggle menu) -->
+  <!-- Mobile Nav -->
   <div x-show="mobileOpen"
-  x-transition:enter="transition ease-out duration-1500"
-  x-transition:enter-start="opacity-0 scale-y-90"
-  x-transition:enter-end="opacity-100 scale-y-100"
-  x-transition:leave="transition ease-in duration-1500"
-  x-transition:leave-start="opacity-100 scale-y-100"
-  x-transition:leave-end="opacity-0 scale-y-90"
-  class="sm:hidden px-6 pb-4 space-y-2 origin-top"
-  >
+       x-transition:enter="transition ease-out duration-300"
+       x-transition:enter-start="opacity-0 scale-y-90"
+       x-transition:enter-end="opacity-100 scale-y-100"
+       x-transition:leave="transition ease-in duration-300"
+       x-transition:leave-start="opacity-100 scale-y-100"
+       x-transition:leave-end="opacity-0 scale-y-90"
+       class="sm:hidden px-6 pb-4 space-y-2 origin-top">
     <nav class="flex flex-col space-y-2 text-sm">
-      <a href="{{ url_for('main.index') }}"
-         class="px-3 py-2 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'main.index' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
-         Home
-      </a>
-      <a href="{{ url_for('main.rooms') }}"
-         class="px-3 py-2 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'main.rooms' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
-         Rooms
-      </a>
-      <a href="{{ url_for('main.booking') }}"
-         class="px-3 py-2 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'main.booking' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
-         Book Now
-      </a>
-      {% if session.get('role') %}
-        <a href="{{ url_for('auth.logout') }}"
-           class="px-3 py-2 rounded-full bg-red-100 text-red-700 font-semibold hover:bg-red-200 transition">
-           Logout
+      {% if session.get('role') == 'receptionist' %}
+        <a href="{{ url_for('receptionist.logout') }}"
+           class="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition flex items-center gap-2" aria-label="Logout">
+          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h3a3 3 0 013 3v1"/>
+          </svg>
+          <span>Logout</span>
         </a>
       {% else %}
-        <a href="{{ url_for('auth.guest_login') }}"
-           class="px-3 py-2 rounded-full transition duration-200 ease-in-out {% if request.endpoint == 'auth.guest_login' %}bg-blue-100 text-blue-700 font-semibold{% else %}text-gray-700 hover:text-blue-600{% endif %}">
-           Login
-        </a>
+        <a href="{{ url_for('main.index') }}"
+           class="px-4 py-2 rounded-lg {% if request.endpoint == 'main.index' %}bg-blue-600 text-white font-semibold{% else %}text-gray-300 hover:bg-blue-600 hover:text-white transition{% endif %}" aria-label="Home">Home</a>
+        <a href="{{ url_for('main.booking') }}"
+           class="px-4 py-2 rounded-lg {% if request.endpoint == 'main.booking' %}bg-blue-600 text-white font-semibold{% else %}text-gray-300 hover:bg-blue-600 hover:text-white transition{% endif %}" aria-label="Book Now">Book Now</a>
+        <a href="{{ url_for('main.manage_booking') }}"
+           class="px-4 py-2 rounded-lg {% if request.endpoint == 'main.manage_booking' %}bg-blue-600 text-white font-semibold{% else %}text-gray-300 hover:bg-blue-600 hover:text-white transition{% endif %}" aria-label="Manage Booking">Manage Booking</a>
+        <a href="{{ url_for('receptionist.login') }}"
+           class="px-4 py-2 rounded-lg {% if request.endpoint == 'receptionist.login' %}bg-blue-600 text-white font-semibold{% else %}text-gray-300 hover:bg-blue-600 hover:text-white transition{% endif %}" aria-label="Login">Login</a>
       {% endif %}
     </nav>
   </div>
 </header>
 
+<!-- Flash Messages -->
+<div class="container mx-auto px-6 mt-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-4 modal-zoom-bounce">
+        {% for category, message in messages %}
+          <div class="text-center text-sm p-4 rounded-lg {% if category == 'danger' %}bg-red-900 text-white{% else %}bg-gray-600 text-gray-200{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
 
-    <!-- Flash messages (for later use) -->
-    <div class="container mx-auto px-6 mt-4">
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="bg-yellow-100 text-yellow-800 p-4 rounded mb-4">
-              {% for message in messages %}
-                <p>{{ message }}</p>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
+<!-- Main Content -->
+<main class="container mx-auto px-6 py-10 min-h-[70vh]">
+  {% block content %}
+  {% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="bg-gray-800 text-white text-center py-6 mt-12">
+  <div class="container mx-auto px-6">
+    <p class="text-sm">© {{ now.year if now else "2025" }} Pelican Hotel. All rights reserved.</p>
+    <div class="mt-4 flex justify-center space-x-4">
+      <a href="/contact" class="text-gray-400 hover:text-blue-400 transition" aria-label="Contact Us">Contact Us</a>
+      <a href="/terms" class="text-gray-400 hover:text-blue-400 transition" aria-label="Terms of Service">Terms</a>
+      <a href="/privacy" class="text-gray-400 hover:text-blue-400 transition" aria-label="Privacy Policy">Privacy</a>
     </div>
+  </div>
+</footer>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-6 py-10 min-h-[70vh]">
-        {% block content %}
-        {% endblock %}
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-blue-800 text-white text-center py-4 mt-12">
-        <p>&copy; {{ now.year if now else "2025" }} Pelican Hotel. All rights reserved.</p>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="{{ url_for('static', filename='js/alpine.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/modalBooking.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/loginToggle.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/receptionist.js') }}"></script>
+<style>
+  @keyframes zoom-bounce {
+    0% { transform: scale(0.9); opacity: 0; }
+    50% { transform: scale(1.1); opacity: 1; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  .modal-zoom-bounce > div {
+    animation: zoom-bounce 0.4s ease-out;
+  }
+</style>
 </body>
 </html>

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}
+  Login - Pelican Hotel
+{% endblock %}
+
+{% block content %}
+<div class="min-h-[50vh] bg-gray-900 flex justify-center items-start pt-8">
+  <div class="p-8 rounded-xl shadow-lg w-full max-w-md bg-gray-800 modal-zoom-bounce">
+    <h2 class="text-2xl sm:text-3xl font-bold text-white mb-6 text-center flex items-center justify-center gap-2">
+      <svg class="w-6 h-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.1.9-2 2-2s2 .9 2 2-2 4-2 4m-4-4c0-1.1-.9-2-2-2s-2 .9-2 2 2 4 2 4m6 5v-3m-6 3v-3m-3 3h12" />
+      </svg>
+      Staff Login
+    </h2>
+
+    <!-- Staff Login Form -->
+    <form id="staffForm" method="POST" action="{{ url_for('receptionist.login') }}" class="space-y-4">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+        </svg>
+        <input type="email" name="email" placeholder="Email" class="w-full pl-10 p-3 h-12 border rounded-lg bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-blue-500 transition" required aria-label="Staff email">
+      </div>
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.1.9-2 2-2s2 .9 2 2-2 4-2 4m-4-4c0-1.1-.9-2-2-2s-2 .9-2 2 2 4 2 4m6 5v-3m-6 3v-3m-3 3h12" />
+        </svg>
+        <input type="password" name="password" placeholder="Password" class="w-full pl-10 p-3 h-12 border rounded-lg bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-blue-500 transition" required aria-label="Staff password">
+      </div>
+      <button type="submit" id="staffLoginBtn" class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2" aria-label="Login as staff">
+        <span class="spinner hidden w-5 h-5 border-2 border-blue-400 border-t-blue-600 rounded-full animate-spin"></span>
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14" />
+        </svg>
+        <span>Login</span>
+      </button>
+    </form>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 backdrop-blur-sm flex items-center justify-center hidden z-50 modal-zoom-bounce" aria-hidden="true">
+      <div class="bg-gray-800 p-6 rounded-xl shadow-xl max-w-sm w-full" role="dialog" aria-labelledby="feedback-modal-title">
+        <button id="feedbackCloseBtn" class="absolute top-2 right-2 text-gray-400 hover:text-white" aria-label="Close feedback modal">
+          <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <h3 id="feedback-modal-title" class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+          <svg class="w-5 h-5 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>Error</span>
+        </h3>
+        <p id="feedbackMessage" class="text-gray-300 text-center"></p>
+        <button id="feedbackCloseFooterBtn" class="mt-4 w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2" aria-label="Close feedback modal">
+          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          <span>Close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Support Link -->
+    <div class="mt-4 text-center text-sm text-gray-400">
+      Having trouble logging in? <a href="/support" class="text-blue-400 hover:text-blue-500 transition">Contact Support</a>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

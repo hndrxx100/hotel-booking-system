@@ -9,11 +9,12 @@ def index():
     return render_template('index.html', now=datetime.now())
 
 
-@main.route('/rooms')
-def rooms():
-    return render_template('rooms.html')
+@main.route('/manage_booking')
+def manage_booking():
+    return render_template('guest/manage_booking.html')
 
 
 @main.route('/booking')
 def booking():
-    return render_template('booking.html')
+    return render_template('guest/booking.html')
+

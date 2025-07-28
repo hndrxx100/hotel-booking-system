@@ -1,0 +1,65 @@
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 532-012-356
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:48:36] "GET /receptionist/dashboard/html HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:48:36] "[33mGET /static/js/dashboard.js HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:48:37] "[36mGET /static/js/login.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:48:37] "[36mGET /static/js/alpine.min.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:48:37] "[36mGET /static/js/booking.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:48:37] "[36mGET /static/js/scripts.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:48:37] "[36mGET /static/js/receptionist.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:48:37] "[33mGET /static/js/dashboard.js HTTP/1.1[0m" 404 -
+DEBUG:app.routes.dashboard_routes:Fetched 1 bookings and 1 rooms for dashboard
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:48:37] "GET /receptionist/dashboard HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 1 guests
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:48:37] "GET /receptionist/guests HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Room 101 status unchanged: available
+INFO:app.routes.dashboard_routes:Cancelled Booking PL00001, updated Room 1 status
+INFO:app.routes.dashboard_routes:Updated Booking PL00001 status to cancelled
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:50:36] "POST /receptionist/booking/update_status HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 1 bookings and 1 rooms for dashboard
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:50:36] "GET /receptionist/dashboard HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 1 guests
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:50:36] "GET /receptionist/guests HTTP/1.1" 200 -
+INFO:app.routes.dashboard_routes:Deleted Room 1
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:50:46] "POST /receptionist/room/delete/1 HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 0 bookings and 0 rooms for dashboard
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:50:46] "GET /receptionist/dashboard HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 1 guests
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:50:46] "GET /receptionist/guests HTTP/1.1" 200 -
+INFO:app.routes.dashboard_routes:Added Room 102
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:50:54] "POST /receptionist/room/add HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 0 bookings and 1 rooms for dashboard
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:50:54] "GET /receptionist/dashboard HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 1 guests
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:50:54] "GET /receptionist/guests HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Created new guest: guest@example.com
+INFO:app.routes.dashboard_routes:Walk-in booking created: PL00001, Room 102
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:51:38] "POST /receptionist/bookings/walkin HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 1 bookings and 1 rooms for dashboard
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:51:38] "GET /receptionist/dashboard HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 2 guests
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:51:38] "GET /receptionist/guests HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 1 bookings and 1 rooms for dashboard
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:51:55] "GET /receptionist/dashboard HTTP/1.1" 200 -
+INFO:app.routes.dashboard_routes:Updated Room 102 status to available
+INFO:app.routes.dashboard_routes:Modified Booking PL00001, Old Room 1, New Room 1
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:52:12] "POST /receptionist/booking/modify/1 HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 1 bookings and 1 rooms for dashboard
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:52:12] "GET /receptionist/dashboard HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 2 guests
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:52:12] "GET /receptionist/guests HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 1 bookings and 1 rooms for dashboard
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:53:22] "GET /receptionist/dashboard HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:54:24] "GET /receptionist/dashboard/html HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:54:24] "[33mGET /static/js/dashboard.js HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:54:24] "[36mGET /static/js/alpine.min.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:54:24] "[36mGET /static/js/scripts.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:54:24] "[36mGET /static/js/booking.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:54:24] "[36mGET /static/js/login.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:54:24] "[36mGET /static/js/receptionist.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:54:25] "[33mGET /static/js/dashboard.js HTTP/1.1[0m" 404 -
+DEBUG:app.routes.dashboard_routes:Fetched 1 bookings and 1 rooms for dashboard
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:54:25] "GET /receptionist/dashboard HTTP/1.1" 200 -
+DEBUG:app.routes.dashboard_routes:Fetched 2 guests
+INFO:werkzeug:127.0.0.1 - - [25/Jul/2025 08:54:25] "GET /receptionist/guests HTTP/1.1" 200 -
+INFO:werkzeug: * Detected change in 'C:\\Users\\HNDRXX\\Desktop\\hotel-booking\\app\\routes\\dashboard_routes.py', reloading

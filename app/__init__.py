@@ -1,8 +1,7 @@
-# app/__init__.py
 from flask import Flask
 from config import Config
-from app.extensions import db  # ✅ updated import
-from app.routes import register_routes  # your blueprints
+from app.extensions import db
+from app.routes import register_routes
 
 
 def create_app():

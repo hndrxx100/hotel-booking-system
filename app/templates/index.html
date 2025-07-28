@@ -1,131 +1,141 @@
 {% extends "base.html" %}
-
 {% block title %}Welcome - Pelican Hotel{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<section class="relative bg-cover bg-no-repeat bg-center h-[75vh] rounded-xl shadow-md overflow-hidden" style="background-image: url('https://lh3.googleusercontent.com/gps-cs-s/AC9h4nqJI2J6cVSeELD-8qZhBAqnuxJsAO1lidHdBc021Bw8mHTVa80XigU0G3VKNuJ8m2wOPnQzeoqA75MTvd6VwafnxN9chuaK62zLYJFLsb4VTDm-Aq1Q7AfGLWZwXJrfzeMS9KtI=s680-w680-h510-rw');">
-    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="text-center text-white px-6">
-            <h1 class="text-5xl font-extrabold mb-4">Welcome to Pelican Hotel</h1>
-            <p class="text-xl mb-6 max-w-2xl mx-auto">Enjoy a seamless hotel experience — book your room online, check in with ease, and enjoy top-notch comfort.</p>
-            <a href="/rooms" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition duration-300">
-                View Available Rooms
-            </a>
-        </div>
+<section class="relative bg-cover bg-no-repeat bg-center h-[80vh] rounded-xl shadow-xl overflow-hidden modal-zoom-bounce" style="background-image: url('https://images.unsplash.com/photo-1578683012567-a401230f3691?auto=format&fit=crop&w=1920&q=80');">
+  <div class="absolute inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center">
+    <div class="text-center text-white px-6 max-w-3xl mx-auto">
+      <h1 class="text-4xl sm:text-5xl font-extrabold mb-6">Welcome to Pelican Hotel</h1>
+      <p class="text-lg sm:text-xl mb-8">Discover unparalleled comfort and convenience. Book your stay today and experience luxury like never before.</p>
+      <a href="{{ url_for('main.booking') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-lg" aria-label="Book your stay now">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Book Now</span>
+      </a>
     </div>
+  </div>
 </section>
 
 <!-- Features Section -->
-<section class="mt-16 text-center">
-    <h2 class="text-3xl font-bold text-gray-800 mb-8">Why Stay With Us?</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-6">
-        <div class="bg-white rounded-lg shadow p-6 hover:shadow-xl transition">
-            <img src="https://img.icons8.com/color/96/bed.png" alt="Comfort" class="w-16 mx-auto mb-4">
-            <h3 class="text-xl font-semibold text-blue-700 mb-2">Ultimate Comfort</h3>
-            <p class="text-gray-600">Spacious rooms, cozy beds, and serene ambiance for the perfect rest.</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6 hover:shadow-xl transition">
-            <img src="https://img.icons8.com/color/96/calendar.png" alt="Easy Booking" class="w-16 mx-auto mb-4">
-            <h3 class="text-xl font-semibold text-blue-700 mb-2">Easy Booking</h3>
-            <p class="text-gray-600">Reserve your stay in just a few clicks — anytime, anywhere.</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6 hover:shadow-xl transition">
-            <img src="https://img.icons8.com/color/96/room-service.png" alt="Service" class="w-16 mx-auto mb-4">
-            <h3 class="text-xl font-semibold text-blue-700 mb-2">Excellent Service</h3>
-            <p class="text-gray-600">Friendly staff available 24/7 to meet all your needs.</p>
-        </div>
+<section class="mt-16 text-center max-w-6xl mx-auto px-6">
+  <h2 class="text-3xl font-bold text-white mb-12">Why Choose Pelican Hotel?</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 modal-zoom-bounce">
+    <div class="bg-gray-700 rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+      <img src="https://img.icons8.com/color/96/bed.png" alt="Comfort" class="w-16 mx-auto mb-4">
+      <h3 class="text-xl font-semibold text-blue-400 mb-2">Ultimate Comfort</h3>
+      <p class="text-gray-300">Spacious rooms, plush bedding, and a serene ambiance for the perfect stay.</p>
     </div>
-</section>
-
-<section class="mt-24 bg-blue-50 py-16 px-6">
-  <h2 class="text-3xl font-bold text-center text-blue-800 mb-12">What Our Guests Say</h2>
-  <div class="max-w-5xl mx-auto grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-    <blockquote class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
-      <p class="text-gray-700 italic mb-4">"The staff were incredibly attentive, and the room was spotless. Highly recommend!"</p>
-      <footer class="text-sm font-semibold text-blue-700">— Jane Doe</footer>
-    </blockquote>
-    <blockquote class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
-      <p class="text-gray-700 italic mb-4">"Booking was effortless and the hotel location was perfect for our vacation."</p>
-      <footer class="text-sm font-semibold text-blue-700">— John Smith</footer>
-    </blockquote>
-    <blockquote class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
-      <p class="text-gray-700 italic mb-4">"Excellent amenities and top-notch comfort. We'll definitely be back!"</p>
-      <footer class="text-sm font-semibold text-blue-700">— Emily R.</footer>
-    </blockquote>
-  </div>
-</section>
-
-<section class="mt-24 px-6 max-w-6xl mx-auto">
-  <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Explore Our Rooms</h2>
-  <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-    <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-xl transition">
-      <img src="https://images.unsplash.com/photo-1560448075-2369d09394a9?auto=format&fit=crop&w=800&q=80" alt="Standard Room" class="w-full h-48 object-cover">
-      <div class="p-6">
-        <h3 class="text-xl font-semibold mb-2">Standard Room</h3>
-        <p class="text-gray-600 mb-4">Cozy and affordable, perfect for solo travelers or couples.</p>
-        <a href="/rooms#standard" class="text-blue-600 hover:underline font-semibold">View Details</a>
-      </div>
+    <div class="bg-gray-700 rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+      <img src="https://img.icons8.com/color/96/calendar.png" alt="Easy Booking" class="w-16 mx-auto mb-4">
+      <h3 class="text-xl font-semibold text-blue-400 mb-2">Seamless Booking</h3>
+      <p class="text-gray-300">Reserve your room in just a few clicks, anytime, anywhere.</p>
     </div>
-    <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-xl transition">
-      <img src="https://images.unsplash.com/photo-1501183638714-7198515b166b?auto=format&fit=crop&w=800&q=80" alt="Deluxe Room" class="w-full h-48 object-cover">
-      <div class="p-6">
-        <h3 class="text-xl font-semibold mb-2">Deluxe Room</h3>
-        <p class="text-gray-600 mb-4">Spacious rooms with premium amenities for your comfort.</p>
-        <a href="/rooms#deluxe" class="text-blue-600 hover:underline font-semibold">View Details</a>
-      </div>
-    </div>
-    <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-xl transition">
-      <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80" alt="Suite" class="w-full h-48 object-cover">
-      <div class="p-6">
-        <h3 class="text-xl font-semibold mb-2">Suite</h3>
-        <p class="text-gray-600 mb-4">Luxury suite with a separate living area and breathtaking views.</p>
-        <a href="/rooms#suite" class="text-blue-600 hover:underline font-semibold">View Details</a>
-      </div>
+    <div class="bg-gray-700 rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+      <img src="https://img.icons8.com/color/96/room-service.png" alt="Service" class="w-16 mx-auto mb-4">
+      <h3 class="text-xl font-semibold text-blue-400 mb-2">Exceptional Service</h3>
+      <p class="text-gray-300">Our friendly staff is available 24/7 to ensure your needs are met.</p>
     </div>
   </div>
 </section>
 
-<section class="mt-24 bg-blue-50 py-16 px-6">
-  <h2 class="text-3xl font-bold text-center text-blue-800 mb-12">Our Amenities</h2>
-  <div class="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-12 text-center">
-    <div>
-      <img src="https://img.icons8.com/color/96/swimming-pool.png" alt="Pool" class="mx-auto mb-4" />
-      <h3 class="font-semibold text-lg mb-1">Swimming Pool</h3>
-      <p class="text-gray-600">Relax in our outdoor pool year-round.</p>
+<!-- Testimonials Section -->
+<section class="mt-24 bg-gray-800 py-16 px-6">
+  <h2 class="text-3xl font-bold text-center text-white mb-12">What Our Guests Say</h2>
+  <div class="max-w-5xl mx-auto grid gap-10 sm:grid-cols-2 lg:grid-cols-3 modal-zoom-bounce">
+    <blockquote class="bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition">
+      <p class="text-gray-300 italic mb-4">"The staff were incredibly attentive, and the room was impeccable. Highly recommend!"</p>
+      <footer class="text-sm font-semibold text-blue-400">— Jane Doe</footer>
+    </blockquote>
+    <blockquote class="bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition">
+      <p class="text-gray-300 italic mb-4">"Booking was effortless, and the hotel’s location was perfect for our vacation."</p>
+      <footer class="text-sm font-semibold text-blue-400">— John Smith</footer>
+    </blockquote>
+    <blockquote class="bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition">
+      <p class="text-gray-300 italic mb-4">"Outstanding amenities and top-notch comfort. We’ll definitely be back!"</p>
+      <footer class="text-sm font-semibold text-blue-400">— Emily R.</footer>
+    </blockquote>
+  </div>
+</section>
+
+<!-- Rooms Section -->
+<section class="mt-24 max-w-6xl mx-auto px-6">
+  <h2 class="text-3xl font-bold text-center text-white mb-12">Explore Our Rooms</h2>
+  <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 modal-zoom-bounce">
+    <div class="bg-gray-700 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+      <img src="https://images.unsplash.com/photo-1582719471384-1f4d6f5d4193?auto=format&fit=crop&w=800&q=80" alt="Single Room" class="w-full h-48 object-cover">
+      <div class="p-6">
+        <h3 class="text-xl font-semibold text-white mb-2">Single Room</h3>
+        <p class="text-gray-300 mb-4">Cozy and affordable, perfect for solo travelers.</p>
+        <a href="{{ url_for('main.booking') }}#single" class="text-blue-400 hover:text-blue-300 font-semibold transition" aria-label="View Single Room Details">View Details</a>
+      </div>
     </div>
-    <div>
-      <img src="https://img.icons8.com/color/96/wifi.png" alt="Wi-Fi" class="mx-auto mb-4" />
-      <h3 class="font-semibold text-lg mb-1">Free Wi-Fi</h3>
-      <p class="text-gray-600">Stay connected throughout the hotel.</p>
+    <div class="bg-gray-700 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+      <img src="https://images.unsplash.com/photo-1590490360836-2f4025a8e7fc?auto=format&fit=crop&w=800&q=80" alt="Double Room" class="w-full h-48 object-cover">
+      <div class="p-6">
+        <h3 class="text-xl font-semibold text-white mb-2">Double Room</h3>
+        <p class="text-gray-300 mb-4">Spacious rooms with premium amenities for couples.</p>
+        <a href="{{ url_for('main.booking') }}#double" class="text-blue-400 hover:text-blue-300 font-semibold transition" aria-label="View Double Room Details">View Details</a>
+      </div>
     </div>
-    <div>
-      <img src="https://img.icons8.com/color/96/restaurant.png" alt="Restaurant" class="mx-auto mb-4" />
-      <h3 class="font-semibold text-lg mb-1">On-site Restaurant</h3>
-      <p class="text-gray-600">Enjoy gourmet meals any time of day.</p>
-    </div>
-    <div>
-      <img src="https://img.icons8.com/color/96/spa.png" alt="Spa" class="mx-auto mb-4" />
-      <h3 class="font-semibold text-lg mb-1">Spa & Wellness</h3>
-      <p class="text-gray-600">Unwind with massages and treatments.</p>
-    </div>
-    <div>
-      <img src="https://img.icons8.com/color/96/gym.png" alt="Gym" class="mx-auto mb-4" />
-      <h3 class="font-semibold text-lg mb-1">Fitness Center</h3>
-      <p class="text-gray-600">State-of-the-art equipment open 24/7.</p>
-    </div>
-    <div>
-      <img src="https://img.icons8.com/color/96/parking.png" alt="Parking" class="mx-auto mb-4" />
-      <h3 class="font-semibold text-lg mb-1">Parking</h3>
-      <p class="text-gray-600">Secure on-site parking available.</p>
+    <div class="bg-gray-700 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+      <img src="https://images.unsplash.com/photo-1578683012567-a401230f3691?auto=format&fit=crop&w=800&q=80" alt="Suite" class="w-full h-48 object-cover">
+      <div class="p-6">
+        <h3 class="text-xl font-semibold text-white mb-2">Suite</h3>
+        <p class="text-gray-300 mb-4">Luxury suite with a separate living area and stunning views.</p>
+        <a href="{{ url_for('main.booking') }}#suite" class="text-blue-400 hover:text-blue-300 font-semibold transition" aria-label="View Suite Details">View Details</a>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="mt-24 bg-blue-700 py-16 text-center text-white rounded-lg mx-6 max-w-4xl mx-auto shadow-lg">
-  <h2 class="text-3xl font-bold mb-6">Ready for your perfect stay?</h2>
-  <p class="mb-8 max-w-xl mx-auto">Book your room today and experience comfort like never before.</p>
-  <a href="/booking" class="bg-white text-blue-700 px-8 py-4 rounded font-semibold hover:bg-gray-100 transition duration-300">Book Now</a>
+<!-- Amenities Section -->
+<section class="mt-24 bg-gray-800 py-16 px-6">
+  <h2 class="text-3xl font-bold text-center text-white mb-12">Our Amenities</h2>
+  <div class="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-12 text-center modal-zoom-bounce">
+    <div>
+      <img src="https://img.icons8.com/color/96/swimming-pool.png" alt="Pool" class="w-16 mx-auto mb-4" />
+      <h3 class="font-semibold text-lg text-blue-400 mb-1">Swimming Pool</h3>
+      <p class="text-gray-300">Relax in our outdoor pool year-round.</p>
+    </div>
+    <div>
+      <img src="https://img.icons8.com/color/96/wifi.png" alt="Wi-Fi" class="w-16 mx-auto mb-4" />
+      <h3 class="font-semibold text-lg text-blue-400 mb-1">Free Wi-Fi</h3>
+      <p class="text-gray-300">Stay connected throughout the hotel.</p>
+    </div>
+    <div>
+      <img src="https://img.icons8.com/color/96/restaurant.png" alt="Restaurant" class="w-16 mx-auto mb-4" />
+      <h3 class="font-semibold text-lg text-blue-400 mb-1">On-site Restaurant</h3>
+      <p class="text-gray-300">Enjoy gourmet meals any time of day.</p>
+    </div>
+    <div>
+      <img src="https://img.icons8.com/color/96/spa.png" alt="Spa" class="w-16 mx-auto mb-4" />
+      <h3 class="font-semibold text-lg text-blue-400 mb-1">Spa & Wellness</h3>
+      <p class="text-gray-300">Unwind with massages and treatments.</p>
+    </div>
+    <div>
+      <img src="https://img.icons8.com/color/96/gym.png" alt="Gym" class="w-16 mx-auto mb-4" />
+      <h3 class="font-semibold text-lg text-blue-400 mb-1">Fitness Center</h3>
+      <p class="text-gray-300">State-of-the-art equipment open 24/7.</p>
+    </div>
+    <div>
+      <img src="https://img.icons8.com/color/96/parking.png" alt="Parking" class="w-16 mx-auto mb-4" />
+      <h3 class="font-semibold text-lg text-blue-400 mb-1">Parking</h3>
+      <p class="text-gray-300">Secure on-site parking available.</p>
+    </div>
+  </div>
 </section>
 
+<!-- CTA Section -->
+<section class="mt-24 bg-blue-600 py-16 text-center text-white rounded-lg mx-6 max-w-4xl mx-auto shadow-lg modal-zoom-bounce">
+  <h2 class="text-3xl font-bold mb-6">Ready for Your Perfect Stay?</h2>
+  <p class="mb-8 max-w-xl mx-auto text-gray-200">Book your room today and experience luxury like never before.</p>
+  <a href="{{ url_for('main.booking') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition font-semibold text-lg" aria-label="Book your stay now">
+    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    <span>Book Now</span>
+  </a>
+</section>
 {% endblock %}
