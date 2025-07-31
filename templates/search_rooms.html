@@ -34,7 +34,7 @@
                                 {{ form.check_out(class="form-control") }}
                                 {% if form.check_out.errors %}
                                     <div class="text-danger small">
-                                        {% for error in form.check_out.errors %}{{ error }}
+                                        {% for error in form.check_out.errors %}{{ error }}{% endfor %}
                                     </div>
                                 {% endif %}
                             </div>
