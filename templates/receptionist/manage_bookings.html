@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Bookings - Hotel Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-calendar-alt me-2"></i>Manage Bookings
+            </h2>
+            <p class="text-muted">View and manage all hotel bookings</p>
+        </div>
+    </div>
+
+    <!-- Filter Options -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Payment Status</label>
+                            <select class="form-select" id="paymentStatusFilter">
+                                <option value="">All Payments</option>
+                                <option value="unpaid">Unpaid</option>
+                                <option value="paid">Paid</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Booking Status</label>
+                            <select class="form-select" id="bookingStatusFilter">
+                                <option value="">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="checked_in">Checked In</option>
+                                <option value="checked_out">Checked Out</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Date Filter</label>
+                            <select class="form-select" id="dateFilter">
+                                <option value="">All Dates</option>
+                                <option value="today">Today's Bookings</option>
+                                <option value="tomorrow">Tomorrow's Bookings</option>
+                                <option value="this_week">This Week</option>
+                                <option value="pending_checkin">Pending Check-in</option>
+                                <option value="pending_checkout">Pending Check-out</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                <i class="fas fa-times me-1"></i>Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-check text-primary fa-2x mb-2"></i>
+                    <h6 class="text-primary">Today's Check-ins</h6>
+                    <h4 id="todayCheckins">{{ bookings|selectattr('check_in', 'equalto', moment().date())|selectattr('status', 'equalto', 'confirmed')|list|length }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-sign-out-alt text-success fa-2x mb-2"></i>
+                    <h6 class="text-success">Today's Check-outs</h6>
+                    <h4 id="todayCheckouts">{{ bookings|selectattr('check_out', 'equalto', moment().date())|selectattr('status', 'equalto', 'checked_in')|list|length }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2"></i>
+                    <h6 class="text-warning">Pending Payments</h6>
+                    <h4 id="pendingPayments">{{ bookings|selectattr('payment_status', 'equalto', 'unpaid')|list|length }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-users text-info fa-2x mb-2"></i>
+                    <h6 class="text-info">Current Guests</h6>
+                    <h4 id="currentGuests">{{ bookings|selectattr('status', 'equalto', 'checked_in')|list|length }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>All Bookings
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshTable()">
+                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                        </button>
+                        <a href="{{ url_for('search_rooms') }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i>New Booking
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if bookings %}
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="bookingsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Guest</th>
+                                        <th>Room</th>
+                                        <th>Check-in</th>
+                                        <th>Check-out</th>
+                                        <th>Nights</th>
+                                        <th>Total</th>
+                                        <th>Payment</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in bookings %}
+                                        <tr data-booking-id="{{ booking.id }}" 
+                                            data-payment-status="{{ booking.payment_status }}"
+                                            data-booking-status="{{ booking.status }}"
+                                            data-check-in="{{ booking.check_in.isoformat() }}"
+                                            data-check-out="{{ booking.check_out.isoformat() }}">
+                                            <td>
+                                                <strong>{{ booking.reference }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ booking.created_at.strftime('%m/%d %I:%M %p') }}</small>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>{{ booking.guest.name }}</strong>
+                                                    {% if booking.guest.email %}
+                                                        <br><small class="text-muted">{{ booking.guest.email }}</small>
+                                                    {% endif %}
+                                                    <br><small class="text-info">{{ booking.guest.phone }}</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ booking.room.room_number }}</span>
+                                                <br>
+                                                <small class="text-muted">{{ booking.room.category.name }}</small>
+                                            </td>
+                                            <td>
+                                                {{ booking.check_in.strftime('%m/%d/%Y') }}
+                                                {% if booking.check_in == moment().date() %}
+                                                    <br><span class="badge bg-primary">Today</span>
+                                                {% elif booking.check_in == moment().add(1, 'day').date() %}
+                                                    <br><span class="badge bg-info">Tomorrow</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ booking.check_out.strftime('%m/%d/%Y') }}
+                                                {% if booking.check_out == moment().date() %}
+                                                    <br><span class="badge bg-warning">Today</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ booking.nights }}</td>
+                                            <td>
+                                                <strong>${{ "%.2f"|format(booking.total_price) }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ booking.payment_method.replace('_', ' ').title() }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{% if booking.payment_status == 'paid' %}success{% elif booking.payment_status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                                                    {{ booking.payment_status.title() }}
+                                                </span>
+                                                {% if booking.payment_status == 'unpaid' and booking.auto_cancel_time %}
+                                                    <br><small class="text-danger">Auto-cancel: {{ booking.auto_cancel_time.strftime('%I:%M %p') }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'cancelled' %}danger{% elif booking.status == 'checked_in' %}info{% elif booking.status == 'checked_out' %}dark{% else %}secondary{% endif %}">
+                                                    {{ booking.status.replace('_', ' ').title() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group-vertical btn-group-sm">
+                                                    {% if booking.payment_status == 'unpaid' %}
+                                                        <a href="{{ url_for('mark_paid', booking_id=booking.id) }}"
+                                                           class="btn btn-outline-success btn-sm mb-1"
+                                                           title="Mark as Paid">
+                                                            <i class="fas fa-dollar-sign me-1"></i>Mark Paid
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    {% if booking.payment_status == 'paid' and booking.status == 'confirmed' %}
+                                                        <a href="{{ url_for('check_in', booking_id=booking.id) }}"
+                                                           class="btn btn-outline-primary btn-sm mb-1"
+                                                           title="Check In Guest">
+                                                            <i class="fas fa-sign-in-alt me-1"></i>Check In
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    {% if booking.status == 'checked_in' %}
+                                                        <a href="{{ url_for('check_out', booking_id=booking.id) }}"
+                                                           class="btn btn-outline-info btn-sm mb-1"
+                                                           title="Check Out Guest">
+                                                            <i class="fas fa-sign-out-alt me-1"></i>Check Out
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                            onclick="showBookingDetails({{ booking.id }}, '{{ booking.reference }}')"
+                                                            title="View Details">
+                                                        <i class="fas fa-eye me-1"></i>Details
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                            <p>No bookings found.</p>
+                            <a href="{{ url_for('search_rooms') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Create First Booking
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Details Modal -->
+<div class="modal fade" id="bookingDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>Booking Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="bookingDetailsContent">
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                        <p>Loading booking details...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let bookingsTable;
+
+$(document).ready(function() {
+    // Initialize DataTable
+    bookingsTable = $('#bookingsTable').DataTable({
+        order: [[0, 'desc']], // Sort by reference (newest first)
+        pageLength: 25,
+        columnDefs: [
+            { orderable: false, targets: [9] } // Disable sorting on actions column
+        ],
+        language: {
+            search: "Search bookings:",
+            lengthMenu: "Show _MENU_ bookings per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ bookings",
+            emptyTable: "No bookings found"
+        }
+    });
+    
+    // Filter functionality
+    $('#paymentStatusFilter, #bookingStatusFilter, #dateFilter').on('change', function() {
+        applyFilters();
+    });
+    
+    // Auto-refresh every 2 minutes
+    setInterval(refreshTable, 120000);
+});
+
+function applyFilters() {
+    const paymentStatus = $('#paymentStatusFilter').val();
+    const bookingStatus = $('#bookingStatusFilter').val();
+    const dateFilter = $('#dateFilter').val();
+    
+    // Clear previous filters
+    bookingsTable.columns().search('');
+    
+    // Apply payment status filter
+    if (paymentStatus) {
+        bookingsTable.column(7).search(paymentStatus);
+    }
+    
+    // Apply booking status filter
+    if (bookingStatus) {
+        bookingsTable.column(8).search(bookingStatus.replace('_', ' '));
+    }
+    
+    // Apply date filter
+    if (dateFilter) {
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+        
+        let searchTerm = '';
+        switch(dateFilter) {
+            case 'today':
+                searchTerm = 'Today';
+                break;
+            case 'tomorrow':
+                searchTerm = 'Tomorrow';
+                break;
+            case 'this_week':
+                // More complex filtering would be needed here
+                break;
+            case 'pending_checkin':
+                bookingsTable.column(8).search('Confirmed');
+                break;
+            case 'pending_checkout':
+                bookingsTable.column(8).search('Checked In');
+                break;
+        }
+        
+        if (searchTerm) {
+            bookingsTable.columns([3, 4]).search(searchTerm);
+        }
+    }
+    
+    bookingsTable.draw();
+}
+
+function clearFilters() {
+    $('#paymentStatusFilter, #bookingStatusFilter, #dateFilter').val('');
+    bookingsTable.columns().search('').draw();
+}
+
+function refreshTable() {
+    const btn = $('button[onclick="refreshTable()"]');
+    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Refreshing...');
+    
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+}
+
+function showBookingDetails(bookingId, bookingRef) {
+    $('#bookingDetailsModal').modal('show');
+    
+    // In a real implementation, this would be an AJAX call to get booking details
+    // For now, we'll simulate loading booking details from the table row
+    const row = $(`tr[data-booking-id="${bookingId}"]`);
+    const guestName = row.find('td:eq(1) strong').text();
+    const room = row.find('td:eq(2) .badge').text() + ' (' + row.find('td:eq(2) small').text() + ')';
+    const checkIn = row.find('td:eq(3)').text().split('\n')[0].trim();
+    const checkOut = row.find('td:eq(4)').text().split('\n')[0].trim();
+    const total = row.find('td:eq(6) strong').text();
+    const paymentStatus = row.find('td:eq(7) .badge').text();
+    const bookingStatus = row.find('td:eq(8) .badge').text();
+    
+    const detailsHtml = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-primary mb-3">Booking Information</h6>
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Reference:</strong></td>
+                        <td>${bookingRef}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Guest:</strong></td>
+                        <td>${guestName}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Room:</strong></td>
+                        <td>${room}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Check-in:</strong></td>
+                        <td>${checkIn}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Check-out:</strong></td>
+                        <td>${checkOut}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-primary mb-3">Status & Payment</h6>
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Total Amount:</strong></td>
+                        <td>${total}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Payment Status:</strong></td>
+                        <td><span class="badge bg-success">${paymentStatus}</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Booking Status:</strong></td>
+                        <td><span class="badge bg-info">${bookingStatus}</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <h6 class="text-primary mb-2">Quick Actions</h6>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary" onclick="window.open('/booking_lookup', '_blank')">
+                    <i class="fas fa-external-link-alt me-1"></i>View Full Details
+                </button>
+                <button class="btn btn-sm btn-outline-success" onclick="printBooking('${bookingRef}')">
+                    <i class="fas fa-print me-1"></i>Print Booking
+                </button>
+            </div>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        $('#bookingDetailsContent').html(detailsHtml);
+    }, 500);
+}
+
+function printBooking(bookingRef) {
+    // Simple print functionality - in reality, this would generate a proper booking receipt
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Booking ${bookingRef}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .booking-details { margin-bottom: 20px; }
+                .footer { margin-top: 30px; text-align: center; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h2>Hotel Management System</h2>
+                <h3>Booking Confirmation</h3>
+                <p>Reference: ${bookingRef}</p>
+            </div>
+            <div class="booking-details">
+                <p><strong>Note:</strong> This is a simplified print view. Full booking details would be displayed here.</p>
+            </div>
+            <div class="footer">
+                <p>Thank you for choosing our hotel!</p>
+                <p>Printed on: ${new Date().toLocaleString()}</p>
+            </div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Highlight urgent bookings
+$(document).ready(function() {
+    // Highlight rows that need attention
+    $('tr[data-payment-status="unpaid"]').addClass('table-warning');
+    $('tr[data-booking-status="checked_in"]').addClass('table-info');
+});
+</script>
+{% endblock %}

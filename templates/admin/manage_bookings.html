@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Bookings - Hotel Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-calendar-alt me-2"></i>Manage Bookings
+            </h2>
+        </div>
+    </div>
+
+    <!-- Filter Options -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Payment Status</label>
+                            <select class="form-select" id="paymentStatusFilter">
+                                <option value="">All Payments</option>
+                                <option value="unpaid">Unpaid</option>
+                                <option value="paid">Paid</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Booking Status</label>
+                            <select class="form-select" id="bookingStatusFilter">
+                                <option value="">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="checked_in">Checked In</option>
+                                <option value="checked_out">Checked Out</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Date Range</label>
+                            <select class="form-select" id="dateRangeFilter">
+                                <option value="">All Dates</option>
+                                <option value="today">Today</option>
+                                <option value="this_week">This Week</option>
+                                <option value="this_month">This Month</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                <i class="fas fa-times me-1"></i>Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if bookings %}
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="bookingsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Guest</th>
+                                        <th>Room</th>
+                                        <th>Check-in</th>
+                                        <th>Check-out</th>
+                                        <th>Nights</th>
+                                        <th>Total</th>
+                                        <th>Payment</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in bookings %}
+                                        <tr>
+                                            <td><strong>{{ booking.reference }}</strong></td>
+                                            <td>
+                                                <div>{{ booking.guest.name }}</div>
+                                                <small class="text-muted">{{ booking.guest.phone }}</small>
+                                            </td>
+                                            <td>{{ booking.room.room_number }} ({{ booking.room.category.name }})</td>
+                                            <td>{{ booking.check_in.strftime('%m/%d/%Y') }}</td>
+                                            <td>{{ booking.check_out.strftime('%m/%d/%Y') }}</td>
+                                            <td>{{ booking.nights }}</td>
+                                            <td>${{ "%.2f"|format(booking.total_price) }}</td>
+                                            <td>
+                                                <span class="badge bg-{% if booking.payment_status == 'paid' %}success{% elif booking.payment_status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                                                    {{ booking.payment_status.title() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'cancelled' %}danger{% elif booking.status == 'checked_in' %}info{% elif booking.status == 'checked_out' %}dark{% else %}secondary{% endif %}">
+                                                    {{ booking.status.replace('_', ' ').title() }}
+                                                </span>
+                                            </td>
+                                            <td>{{ booking.created_at.strftime('%m/%d/%Y %I:%M %p') }}</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    {% if booking.payment_status == 'unpaid' %}
+                                                        <a href="{{ url_for('mark_paid', booking_id=booking.id) }}"
+                                                           class="btn btn-outline-success"
+                                                           title="Mark as Paid">
+                                                            <i class="fas fa-dollar-sign"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    {% if booking.payment_status == 'paid' and booking.status == 'confirmed' %}
+                                                        <a href="{{ url_for('check_in', booking_id=booking.id) }}"
+                                                           class="btn btn-outline-primary"
+                                                           title="Check In">
+                                                            <i class="fas fa-sign-in-alt"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    {% if booking.status == 'checked_in' %}
+                                                        <a href="{{ url_for('check_out', booking_id=booking.id) }}"
+                                                           class="btn btn-outline-info"
+                                                           title="Check Out">
+                                                            <i class="fas fa-sign-out-alt"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    {% if booking.status != 'cancelled' and booking.status != 'checked_out' %}
+                                                        <button class="btn btn-outline-danger"
+                                                                onclick="cancelBooking({{ booking.id }}, '{{ booking.reference }}')"
+                                                                title="Cancel Booking">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                            <p>No bookings found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Booking Modal -->
+<div class="modal fade" id="cancelBookingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Cancel Booking</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel booking <strong id="cancelBookingRef"></strong>?</p>
+                <p class="text-muted">This action will:</p>
+                <ul class="text-muted">
+                    <li>Mark the booking as cancelled</li>
+                    <li>Free up the room for other bookings</li>
+                    <li>Change payment status accordingly</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Booking</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelBtn">
+                    <i class="fas fa-times me-1"></i>Yes, Cancel Booking
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let bookingsTable;
+
+$(document).ready(function() {
+    // Initialize DataTable
+    bookingsTable = $('#bookingsTable').DataTable({
+        order: [[9, 'desc']], // Sort by created date
+        pageLength: 25,
+        columnDefs: [
+            { orderable: false, targets: [10] } // Disable sorting on actions column
+        ]
+    });
+    
+    // Filter functionality
+    $('#paymentStatusFilter, #bookingStatusFilter, #dateRangeFilter').on('change', function() {
+        applyFilters();
+    });
+});
+
+function applyFilters() {
+    const paymentStatus = $('#paymentStatusFilter').val();
+    const bookingStatus = $('#bookingStatusFilter').val();
+    const dateRange = $('#dateRangeFilter').val();
+    
+    // Clear previous filters
+    bookingsTable.columns().search('');
+    
+    // Apply payment status filter
+    if (paymentStatus) {
+        bookingsTable.column(7).search(paymentStatus);
+    }
+    
+    // Apply booking status filter
+    if (bookingStatus) {
+        bookingsTable.column(8).search(bookingStatus.replace('_', ' '));
+    }
+    
+    // Apply date range filter (simplified - you could implement more complex date filtering)
+    if (dateRange) {
+        const today = new Date();
+        let filterDate = '';
+        
+        switch(dateRange) {
+            case 'today':
+                filterDate = today.toLocaleDateString();
+                break;
+            case 'this_week':
+                // Implement week filtering logic
+                break;
+            case 'this_month':
+                filterDate = (today.getMonth() + 1).toString().padStart(2, '0');
+                break;
+        }
+        
+        if (filterDate) {
+            bookingsTable.column(9).search(filterDate);
+        }
+    }
+    
+    bookingsTable.draw();
+}
+
+function clearFilters() {
+    $('#paymentStatusFilter, #bookingStatusFilter, #dateRangeFilter').val('');
+    bookingsTable.columns().search('').draw();
+}
+
+function cancelBooking(bookingId, bookingRef) {
+    $('#cancelBookingRef').text(bookingRef);
+    $('#confirmCancelBtn').data('booking-id', bookingId);
+    $('#cancelBookingModal').modal('show');
+}
+
+$('#confirmCancelBtn').on('click', function() {
+    const bookingId = $(this).data('booking-id');
+    
+    // Here you would typically make an AJAX call to cancel the booking
+    // For now, we'll just reload the page
+    window.location.href = `/cancel_booking_admin/${bookingId}`;
+});
+
+// Auto-refresh table every 2 minutes
+setInterval(function() {
+    location.reload();
+}, 120000);
+</script>
+{% endblock %}

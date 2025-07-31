@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Hotel Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+            </h2>
+            <p class="text-muted">Welcome back, {{ current_user.full_name }}</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ total_bookings }}</h4>
+                            <p class="mb-0">Total Bookings</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar-check fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ active_bookings }}</h4>
+                            <p class="mb-0">Active Bookings</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-bed fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">${{ "%.0f"|format(total_revenue) }}</h4>
+                            <p class="mb-0">Total Revenue</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ "%.1f"|format(occupancy_rate) }}%</h4>
+                            <p class="mb-0">Occupancy Rate</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-pie fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('manage_bookings') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar-alt me-2"></i>Manage Bookings
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('manage_staff') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-users me-2"></i>Manage Staff
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('manage_rooms') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-bed me-2"></i>Manage Rooms
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('reports') }}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-chart-bar me-2"></i>View Reports
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bookings -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Bookings
+                    </h5>
+                    <a href="{{ url_for('manage_bookings') }}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_bookings %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Guest</th>
+                                        <th>Room</th>
+                                        <th>Check-in</th>
+                                        <th>Status</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in recent_bookings %}
+                                        <tr>
+                                            <td>{{ booking.reference }}</td>
+                                            <td>{{ booking.guest.name }}</td>
+                                            <td>{{ booking.room.room_number }}</td>
+                                            <td>{{ booking.check_in.strftime('%m/%d/%Y') }}</td>
+                                            <td>
+                                                <span class="badge bg-{% if booking.payment_status == 'paid' %}success{% elif booking.payment_status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                                                    {{ booking.payment_status.title() }}
+                                                </span>
+                                            </td>
+                                            <td>${{ "%.2f"|format(booking.total_price) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                            <p>No recent bookings found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Auto-refresh dashboard every 5 minutes
+    setInterval(function() {
+        location.reload();
+    }, 300000);
+    
+    // Add hover effects to stat cards
+    $('.card').hover(
+        function() {
+            $(this).addClass('shadow-lg');
+        },
+        function() {
+            $(this).removeClass('shadow-lg');
+        }
+    );
+});
+</script>
+{% endblock %}

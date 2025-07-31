@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Analytics - Hotel Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-chart-bar me-2"></i>Reports & Analytics
+            </h2>
+        </div>
+    </div>
+
+    <!-- Report Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Date Range</label>
+                            <select class="form-select" id="dateRangeFilter">
+                                <option value="last_30_days">Last 30 Days</option>
+                                <option value="last_3_months">Last 3 Months</option>
+                                <option value="last_6_months">Last 6 Months</option>
+                                <option value="last_year">Last Year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Report Type</label>
+                            <select class="form-select" id="reportTypeFilter">
+                                <option value="all">All Reports</option>
+                                <option value="revenue">Revenue Only</option>
+                                <option value="bookings">Bookings Only</option>
+                                <option value="occupancy">Occupancy Only</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary w-100" onclick="refreshReports()">
+                                <i class="fas fa-sync-alt me-1"></i>Refresh Reports
+                            </button>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-success w-100" onclick="exportReports()">
+                                <i class="fas fa-download me-1"></i>Export Reports
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="totalRevenue">${{ "%.0f"|format(monthly_revenue|sum(attribute='revenue') or 0) }}</h4>
+                            <p class="mb-0">Total Revenue</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="totalBookings">{{ booking_status|sum(attribute='count') or 0 }}</h4>
+                            <p class="mb-0">Total Bookings</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar-check fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="avgBookingValue">${{ "%.0f"|format((monthly_revenue|sum(attribute='revenue') or 0) / (booking_status|sum(attribute='count') or 1)) }}</h4>
+                            <p class="mb-0">Avg Booking Value</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-receipt fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="topCategory">{{ category_bookings[0].name if category_bookings else 'N/A' }}</h4>
+                            <p class="mb-0">Top Category</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-trophy fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Revenue Chart -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Monthly Revenue Trend
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Booking Status Chart -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Booking Status Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="bookingStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Room Category Performance -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bed me-2"></i>Room Category Performance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Occupancy Rate -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-percentage me-2"></i>Occupancy Trends
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="occupancyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Tables -->
+    <div class="row g-4">
+        <!-- Revenue Details -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>Monthly Revenue Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if monthly_revenue %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Revenue</th>
+                                        <th>Growth</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for revenue in monthly_revenue %}
+                                        <tr>
+                                            <td>{{ "%04d-%02d"|format(revenue.year|int, revenue.month|int) }}</td>
+                                            <td>${{ "%.2f"|format(revenue.revenue) }}</td>
+                                            <td>
+                                                {% if loop.index > 1 %}
+                                                    {% set prev_revenue = monthly_revenue[loop.index - 2].revenue %}
+                                                    {% set growth = ((revenue.revenue - prev_revenue) / prev_revenue * 100) if prev_revenue > 0 else 0 %}
+                                                    <span class="badge bg-{% if growth >= 0 %}success{% else %}danger{% endif %}">
+                                                        {{ "%.1f"|format(growth) }}%
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-chart-line fa-2x mb-2"></i>
+                            <p>No revenue data available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Booking Summary -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Booking Status Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if booking_status %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Count</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set total_bookings = booking_status|sum(attribute='count') %}
+                                    {% for status in booking_status %}
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-{% if status.status == 'confirmed' %}success{% elif status.status == 'cancelled' %}danger{% elif status.status == 'checked_in' %}info{% elif status.status == 'checked_out' %}dark{% else %}secondary{% endif %}">
+                                                    {{ status.status.replace('_', ' ').title() }}
+                                                </span>
+                                            </td>
+                                            <td>{{ status.count }}</td>
+                                            <td>{{ "%.1f"|format((status.count / total_bookings * 100) if total_bookings > 0 else 0) }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                            <p>No booking data available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Initialize charts
+    initializeCharts();
+    
+    // Auto-refresh every 5 minutes
+    setInterval(refreshReports, 300000);
+});
+
+function initializeCharts() {
+    // Revenue Chart
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for revenue in monthly_revenue %}'{{ "%04d-%02d"|format(revenue.year|int, revenue.month|int) }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Revenue ($)',
+                data: [{% for revenue in monthly_revenue %}{{ revenue.revenue }}{% if not loop.last %},{% endif %}{% endfor %}],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'white',
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: 'white'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Booking Status Chart
+    const statusCtx = document.getElementById('bookingStatusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for status in booking_status %}'{{ status.status.replace("_", " ").title() }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for status in booking_status %}{{ status.count }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: [
+                    '#28a745', // confirmed - green
+                    '#dc3545', // cancelled - red
+                    '#17a2b8', // checked_in - info
+                    '#343a40', // checked_out - dark
+                    '#6c757d'  // pending - secondary
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white'
+                    }
+                }
+            }
+        }
+    });
+
+    // Category Performance Chart
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for category in category_bookings %}'{{ category.name }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Bookings',
+                data: [{% for category in category_bookings %}{{ category.bookings }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'white'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: 'white'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Occupancy Chart (mock data for demonstration)
+    const occupancyCtx = document.getElementById('occupancyChart').getContext('2d');
+    new Chart(occupancyCtx, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets: [{
+                label: 'Occupancy Rate (%)',
+                data: [75, 82, 68, 91],
+                borderColor: 'rgb(255, 159, 64)',
+                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        color: 'white',
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: 'white'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function refreshReports() {
+    // Show loading state
+    $('button[onclick="refreshReports()"]').prop('disabled', true).html(
+        '<i class="fas fa-spinner fa-spin me-1"></i>Refreshing...'
+    );
+    
+    // Reload the page to get fresh data
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+}
+
+function exportReports() {
+    // Create a simple CSV export
+    let csvContent = "data:text/csv;charset=utf-8,";
+    
+    // Add revenue data
+    csvContent += "Monthly Revenue Report\n";
+    csvContent += "Month,Revenue\n";
+    {% for revenue in monthly_revenue %}
+    csvContent += "{{ '%04d-%02d'|format(revenue.year|int, revenue.month|int) }},{{ revenue.revenue }}\n";
+    {% endfor %}
+    
+    csvContent += "\nBooking Status Report\n";
+    csvContent += "Status,Count\n";
+    {% for status in booking_status %}
+    csvContent += "{{ status.status }},{{ status.count }}\n";
+    {% endfor %}
+    
+    // Download the file
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "hotel_reports_" + new Date().toISOString().split('T')[0] + ".csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Chart color theme adjustment for dark mode
+Chart.defaults.color = '#fff';
+Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+</script>
+{% endblock %}

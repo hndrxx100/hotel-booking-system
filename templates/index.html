@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Hotel Management System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Welcome to Our Hotel</h1>
+                <p class="lead mb-4">Experience luxury and comfort in our premium accommodations. Book your perfect stay with our easy-to-use booking system.</p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('search_rooms') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-search me-2"></i>Book Now
+                    </a>
+                    <a href="{{ url_for('booking_lookup') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-calendar-check me-2"></i>Manage Booking
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-hotel display-1 opacity-25"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="h2 mb-3">Why Choose Us?</h2>
+                <p class="text-muted">Experience the best in hospitality with our premium services</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-bed text-primary fa-2x"></i>
+                        </div>
+                        <h5 class="card-title">Comfortable Rooms</h5>
+                        <p class="card-text text-muted">Modern rooms with all amenities including free Wi-Fi, air conditioning, and premium bedding.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-success bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-clock text-success fa-2x"></i>
+                        </div>
+                        <h5 class="card-title">24/7 Service</h5>
+                        <p class="card-text text-muted">Round-the-clock front desk service and customer support for all your needs.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-info bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-mobile-alt text-info fa-2x"></i>
+                        </div>
+                        <h5 class="card-title">Easy Booking</h5>
+                        <p class="card-text text-muted">Simple online booking system with instant confirmation and flexible payment options.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Room Types Section -->
+<section class="py-5 bg-dark bg-opacity-10">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="h2 mb-3">Our Room Types</h2>
+                <p class="text-muted">Choose from our variety of comfortable accommodations</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-bed text-primary me-3 fa-2x"></i>
+                            <h5 class="card-title mb-0">Single Room</h5>
+                        </div>
+                        <p class="card-text text-muted">Perfect for solo travelers with all essential amenities.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Single bed</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Free Wi-Fi</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Air conditioning</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Private bathroom</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-bed text-primary me-3 fa-2x"></i>
+                            <h5 class="card-title mb-0">Double Room</h5>
+                        </div>
+                        <p class="card-text text-muted">Spacious room ideal for couples or business travelers.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Double bed</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Work desk</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Mini refrigerator</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Room service</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-crown text-primary me-3 fa-2x"></i>
+                            <h5 class="card-title mb-0">Suite</h5>
+                        </div>
+                        <p class="card-text text-muted">Luxury accommodation with separate living area.</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>King size bed</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Living room</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Premium amenities</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Concierge service</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Booking Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow">
+                    <div class="card-body p-4">
+                        <h3 class="text-center mb-4">Quick Room Search</h3>
+                        <form action="{{ url_for('search_rooms') }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label">Check-in Date</label>
+                                    <input type="date" class="form-control" name="check_in" required>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Check-out Date</label>
+                                    <input type="date" class="form-control" name="check_out" required>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Set minimum dates for date inputs
+    const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    
+    $('input[name="check_in"]').attr('min', today);
+    $('input[name="check_out"]').attr('min', tomorrow);
+    
+    // Update check-out minimum when check-in changes
+    $('input[name="check_in"]').on('change', function() {
+        const checkInDate = new Date(this.value);
+        const checkOutMin = new Date(checkInDate.getTime() + 86400000).toISOString().split('T')[0];
+        $('input[name="check_out"]').attr('min', checkOutMin);
+    });
+});
+</script>
+{% endblock %}

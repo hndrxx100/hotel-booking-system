@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Booking - Hotel Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-search me-2"></i>Find Your Booking
+            </h2>
+        </div>
+    </div>
+
+    <!-- Lookup Form -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                {{ form.search_type.label(class="form-label") }}
+                                {{ form.search_type(class="form-select") }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.search_value.label(class="form-label") }}
+                                {{ form.search_value(class="form-control", placeholder="Enter email or phone") }}
+                                {% if form.search_value.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.search_value.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.booking_reference.label(class="form-label") }}
+                                {{ form.booking_reference(class="form-control", placeholder="e.g., PL12345678") }}
+                                {% if form.booking_reference.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.booking_reference.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>Find Booking
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Details -->
+    {% if booking %}
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-check me-2"></i>Booking Details
+                        </h5>
+                        <span class="badge bg-{% if booking.payment_status == 'paid' %}success{% elif booking.payment_status == 'cancelled' %}danger{% else %}warning{% endif %} fs-6">
+                            {{ booking.payment_status.title() }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3">Booking Information</h6>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Reference:</strong></td>
+                                        <td>{{ booking.reference }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Guest Name:</strong></td>
+                                        <td>{{ booking.guest.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Email:</strong></td>
+                                        <td>{{ booking.guest.email or 'Not provided' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Phone:</strong></td>
+                                        <td>{{ booking.guest.phone }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td>
+                                            <span class="badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                                {{ booking.status.title() }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3">Room & Stay Details</h6>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Room:</strong></td>
+                                        <td>{{ booking.room.room_number }} ({{ booking.room.category.name }})</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Check-in:</strong></td>
+                                        <td>{{ booking.check_in.strftime('%B %d, %Y') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Check-out:</strong></td>
+                                        <td>{{ booking.check_out.strftime('%B %d, %Y') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Nights:</strong></td>
+                                        <td>{{ booking.nights }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total Price:</strong></td>
+                                        <td class="fw-bold text-success">${{ "%.2f"|format(booking.total_price) }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        {% if booking.payment_method %}
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6 class="text-primary mb-2">Payment Information</h6>
+                                    <p class="mb-1"><strong>Payment Method:</strong> 
+                                        {% if booking.payment_method == 'in_person' %}Pay in Person{% else %}MoMo Payment{% endif %}
+                                    </p>
+                                    {% if booking.payment_status == 'unpaid' and booking.auto_cancel_time %}
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-clock me-2"></i>
+                                            <strong>Payment Due:</strong> This booking will be automatically cancelled on {{ booking.auto_cancel_time.strftime('%B %d, %Y at %I:%M %p') }} if payment is not completed.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        {% if booking.notes %}
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6 class="text-primary mb-2">Notes</h6>
+                                    <p class="text-muted">{{ booking.notes }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex gap-2 justify-content-end">
+                            {% if booking.payment_status == 'paid' and booking.status not in ['cancelled', 'checked_out'] %}
+                                <a href="{{ url_for('modify_booking', booking_reference=booking.reference) }}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-edit me-1"></i>Modify Booking
+                                </a>
+                            {% endif %}
+                            
+                            {% if booking.is_cancellable %}
+                                <button class="btn btn-outline-danger" 
+                                        onclick="confirmCancellation('{{ booking.reference }}')">
+                                    <i class="fas fa-times me-1"></i>Cancel Booking
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif request.method == 'POST' %}
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="alert alert-warning text-center">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No booking found with the provided details. Please check your information and try again.
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Cancellation Confirmation Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Cancel Booking
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel this booking?</p>
+                <p class="text-muted">This action cannot be undone. You may be subject to cancellation fees according to our policy.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Booking</button>
+                <a href="#" id="confirmCancelBtn" class="btn btn-danger">
+                    <i class="fas fa-times me-1"></i>Yes, Cancel Booking
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmCancellation(bookingReference) {
+    $('#confirmCancelBtn').attr('href', '{{ url_for("cancel_booking", booking_reference="") }}' + bookingReference);
+    $('#cancelModal').modal('show');
+}
+
+$(document).ready(function() {
+    // Auto-focus on search value field
+    $('input[name="search_value"]').focus();
+    
+    // Update placeholder based on search type
+    $('select[name="search_type"]').on('change', function() {
+        const searchType = $(this).val();
+        const placeholder = searchType === 'email' ? 'Enter email address' : 'Enter phone number';
+        $('input[name="search_value"]').attr('placeholder', placeholder);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,467 @@
+{% extends "base.html" %}
+
+{% block title %}Receptionist Dashboard - Hotel Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-desktop me-2"></i>Receptionist Dashboard
+            </h2>
+            <p class="text-muted">Welcome back, {{ current_user.full_name }}</p>
+        </div>
+    </div>
+
+    <!-- Today's Overview Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ checkins_today }}</h4>
+                            <p class="mb-0">Check-ins Today</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-sign-in-alt fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ checkouts_today }}</h4>
+                            <p class="mb-0">Check-outs Today</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-sign-out-alt fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ pending_payments }}</h4>
+                            <p class="mb-0">Pending Payments</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ recent_bookings|length }}</h4>
+                            <p class="mb-0">Recent Bookings</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar-alt fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('search_rooms') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-plus me-2"></i>New Booking
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('receptionist_manage_bookings') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-calendar-check me-2"></i>Manage Bookings
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('booking_lookup') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-search me-2"></i>Find Booking
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-warning w-100" onclick="showRoomStatus()">
+                                <i class="fas fa-bed me-2"></i>Room Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Schedule -->
+    <div class="row g-4 mb-4">
+        <!-- Check-ins Today -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sign-in-alt me-2"></i>Today's Check-ins
+                    </h5>
+                    <span class="badge bg-primary">{{ checkins_today }}</span>
+                </div>
+                <div class="card-body">
+                    {% set todays_checkins = recent_bookings|selectattr('check_in', 'equalto', moment().date())|selectattr('status', 'equalto', 'confirmed')|list %}
+                    {% if todays_checkins %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Guest</th>
+                                        <th>Room</th>
+                                        <th>Nights</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in todays_checkins %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ booking.guest.name }}</strong><br>
+                                                <small class="text-muted">{{ booking.reference }}</small>
+                                            </td>
+                                            <td>{{ booking.room.room_number }}</td>
+                                            <td>{{ booking.nights }}</td>
+                                            <td>
+                                                {% if booking.status == 'confirmed' %}
+                                                    <a href="{{ url_for('check_in', booking_id=booking.id) }}" 
+                                                       class="btn btn-sm btn-success">
+                                                        <i class="fas fa-sign-in-alt me-1"></i>Check In
+                                                    </a>
+                                                {% else %}
+                                                    <span class="badge bg-success">Checked In</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                            <p>No check-ins scheduled for today</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Check-outs Today -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sign-out-alt me-2"></i>Today's Check-outs
+                    </h5>
+                    <span class="badge bg-success">{{ checkouts_today }}</span>
+                </div>
+                <div class="card-body">
+                    {% set todays_checkouts = recent_bookings|selectattr('check_out', 'equalto', moment().date())|selectattr('status', 'equalto', 'checked_in')|list %}
+                    {% if todays_checkouts %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Guest</th>
+                                        <th>Room</th>
+                                        <th>Total</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in todays_checkouts %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ booking.guest.name }}</strong><br>
+                                                <small class="text-muted">{{ booking.reference }}</small>
+                                            </td>
+                                            <td>{{ booking.room.room_number }}</td>
+                                            <td>${{ "%.2f"|format(booking.total_price) }}</td>
+                                            <td>
+                                                {% if booking.status == 'checked_in' %}
+                                                    <a href="{{ url_for('check_out', booking_id=booking.id) }}" 
+                                                       class="btn btn-sm btn-info">
+                                                        <i class="fas fa-sign-out-alt me-1"></i>Check Out
+                                                    </a>
+                                                {% else %}
+                                                    <span class="badge bg-dark">Checked Out</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                            <p>No check-outs scheduled for today</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bookings -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Bookings
+                    </h5>
+                    <a href="{{ url_for('receptionist_manage_bookings') }}" class="btn btn-sm btn-outline-primary">
+                        View All Bookings
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_bookings %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Guest</th>
+                                        <th>Room</th>
+                                        <th>Check-in</th>
+                                        <th>Status</th>
+                                        <th>Payment</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in recent_bookings[:10] %}
+                                        <tr>
+                                            <td><strong>{{ booking.reference }}</strong></td>
+                                            <td>
+                                                {{ booking.guest.name }}<br>
+                                                <small class="text-muted">{{ booking.guest.phone }}</small>
+                                            </td>
+                                            <td>{{ booking.room.room_number }}</td>
+                                            <td>{{ booking.check_in.strftime('%m/%d/%Y') }}</td>
+                                            <td>
+                                                <span class="badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'cancelled' %}danger{% elif booking.status == 'checked_in' %}info{% elif booking.status == 'checked_out' %}dark{% else %}secondary{% endif %}">
+                                                    {{ booking.status.replace('_', ' ').title() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{% if booking.payment_status == 'paid' %}success{% elif booking.payment_status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                                                    {{ booking.payment_status.title() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    {% if booking.payment_status == 'unpaid' %}
+                                                        <a href="{{ url_for('mark_paid', booking_id=booking.id) }}"
+                                                           class="btn btn-outline-success"
+                                                           title="Mark as Paid">
+                                                            <i class="fas fa-dollar-sign"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    {% if booking.payment_status == 'paid' and booking.status == 'confirmed' %}
+                                                        <a href="{{ url_for('check_in', booking_id=booking.id) }}"
+                                                           class="btn btn-outline-primary"
+                                                           title="Check In">
+                                                            <i class="fas fa-sign-in-alt"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    {% if booking.status == 'checked_in' %}
+                                                        <a href="{{ url_for('check_out', booking_id=booking.id) }}"
+                                                           class="btn btn-outline-info"
+                                                           title="Check Out">
+                                                            <i class="fas fa-sign-out-alt"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                            <p>No recent bookings found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Room Status Modal -->
+<div class="modal fade" id="roomStatusModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-bed me-2"></i>Current Room Status
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="roomStatusContent">
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                        <p>Loading room status...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Auto-refresh dashboard every 2 minutes
+    setInterval(function() {
+        location.reload();
+    }, 120000);
+    
+    // Add hover effects to stat cards
+    $('.card').hover(
+        function() {
+            $(this).addClass('shadow-lg');
+        },
+        function() {
+            $(this).removeClass('shadow-lg');
+        }
+    );
+});
+
+function showRoomStatus() {
+    $('#roomStatusModal').modal('show');
+    
+    // Load room status (this would typically be an AJAX call)
+    setTimeout(function() {
+        const mockRoomStatus = `
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card border-success">
+                        <div class="card-body text-center">
+                            <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
+                            <h6>Available Rooms</h6>
+                            <h4 class="text-success">24</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-danger">
+                        <div class="card-body text-center">
+                            <i class="fas fa-users text-danger fa-2x mb-2"></i>
+                            <h6>Occupied Rooms</h6>
+                            <h4 class="text-danger">18</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-warning">
+                        <div class="card-body text-center">
+                            <i class="fas fa-tools text-warning fa-2x mb-2"></i>
+                            <h6>Maintenance</h6>
+                            <h4 class="text-warning">3</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h6>Quick Room Overview</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Floor</th>
+                                <th>Available</th>
+                                <th>Occupied</th>
+                                <th>Maintenance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Floor 1</td>
+                                <td><span class="badge bg-success">8</span></td>
+                                <td><span class="badge bg-danger">6</span></td>
+                                <td><span class="badge bg-warning">1</span></td>
+                            </tr>
+                            <tr>
+                                <td>Floor 2</td>
+                                <td><span class="badge bg-success">10</span></td>
+                                <td><span class="badge bg-danger">7</span></td>
+                                <td><span class="badge bg-warning">1</span></td>
+                            </tr>
+                            <tr>
+                                <td>Floor 3</td>
+                                <td><span class="badge bg-success">6</span></td>
+                                <td><span class="badge bg-danger">5</span></td>
+                                <td><span class="badge bg-warning">1</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        $('#roomStatusContent').html(mockRoomStatus);
+    }, 1000);
+}
+
+// Show time and date
+function updateDateTime() {
+    const now = new Date();
+    const options = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
+    
+    // You could add this to the header if needed
+    console.log(now.toLocaleDateString('en-US', options));
+}
+
+updateDateTime();
+</script>
+{% endblock %}

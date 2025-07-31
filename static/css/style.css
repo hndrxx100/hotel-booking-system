@@ -1,0 +1,601 @@
+/**
+ * Custom CSS for Hotel Management System
+ * Built to complement Bootstrap 5 dark theme
+ * Minimal overrides to maintain theme consistency
+ */
+
+/* Root variables for consistency with Bootstrap dark theme */
+:root {
+    --hotel-primary: var(--bs-primary);
+    --hotel-success: var(--bs-success);
+    --hotel-info: var(--bs-info);
+    --hotel-warning: var(--bs-warning);
+    --hotel-danger: var(--bs-danger);
+    --hotel-light: var(--bs-light);
+    --hotel-dark: var(--bs-dark);
+    --hotel-body-bg: var(--bs-body-bg);
+    --hotel-body-color: var(--bs-body-color);
+    --hotel-border-color: var(--bs-border-color);
+    --hotel-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --hotel-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+}
+
+/* Enhanced focus visibility for accessibility */
+.focus-visible {
+    outline: 2px solid var(--bs-primary) !important;
+    outline-offset: 2px !important;
+}
+
+/* Skip to main content link for accessibility */
+#skip-to-main {
+    z-index: 10000;
+}
+
+#skip-to-main:focus {
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+}
+
+/* Hero section styling */
+.hero-section {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+    min-height: 400px;
+}
+
+/* Feature icon styling */
+.feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Card hover effects */
+.card {
+    transition: all 0.3s ease;
+    border: 1px solid var(--bs-border-color);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hotel-shadow-lg);
+}
+
+/* Dashboard stat cards */
+.card.bg-primary,
+.card.bg-success,
+.card.bg-info,
+.card.bg-warning,
+.card.bg-danger {
+    border: none;
+    box-shadow: var(--hotel-shadow);
+}
+
+/* Table enhancements */
+.table-hover tbody tr:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* Badge styling consistency */
+.badge {
+    font-size: 0.75em;
+    font-weight: 500;
+}
+
+/* Button group vertical spacing */
+.btn-group-vertical .btn {
+    margin-bottom: 2px;
+}
+
+.btn-group-vertical .btn:last-child {
+    margin-bottom: 0;
+}
+
+/* Form enhancements */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Password strength indicator */
+.password-strength {
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+}
+
+/* DataTables dark theme adjustments */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_processing,
+.dataTables_wrapper .dataTables_paginate {
+    color: var(--bs-body-color);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: var(--bs-body-color) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: var(--bs-secondary) !important;
+    border: 1px solid var(--bs-border-color) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--bs-primary) !important;
+    border: 1px solid var(--bs-primary) !important;
+}
+
+/* Chart.js canvas dark theme */
+canvas {
+    background-color: transparent !important;
+}
+
+/* Modal enhancements */
+.modal-content {
+    border: 1px solid var(--bs-border-color);
+    box-shadow: var(--hotel-shadow-lg);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--bs-border-color);
+}
+
+/* Alert enhancements */
+.alert {
+    border: 1px solid transparent;
+    box-shadow: var(--hotel-shadow);
+}
+
+/* Navigation enhancements */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.navbar-nav .nav-link:hover {
+    background-color: rgba(var(--bs-light-rgb), 0.1);
+    border-radius: var(--bs-border-radius);
+}
+
+/* Footer styling */
+footer {
+    margin-top: auto;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+/* Loading states */
+.btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* Toast notifications positioning */
+#toast-container {
+    z-index: 9999;
+}
+
+.toast {
+    border: none;
+    box-shadow: var(--hotel-shadow-lg);
+}
+
+/* Booking status indicators */
+.table tr.table-warning {
+    background-color: rgba(var(--bs-warning-rgb), 0.1) !important;
+}
+
+.table tr.table-info {
+    background-color: rgba(var(--bs-info-rgb), 0.1) !important;
+}
+
+/* Search and filter enhancements */
+.search-input {
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    transform: scale(1.02);
+}
+
+/* Room status grid */
+.room-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+/* Booking timeline styles */
+.booking-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.booking-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--bs-border-color);
+}
+
+.booking-timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.booking-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.5rem;
+    top: 0.5rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--bs-primary);
+    border: 2px solid var(--bs-body-bg);
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .btn,
+    .modal,
+    .toast-container,
+    #scrollToTop {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .table {
+        border-collapse: collapse !important;
+    }
+    
+    .table th,
+    .table td {
+        border: 1px solid #000 !important;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 300px;
+        text-align: center;
+    }
+    
+    .btn-group-vertical {
+        width: 100%;
+    }
+    
+    .btn-group-vertical .btn {
+        justify-content: center;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    .card-body {
+        padding: 1rem 0.75rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .card {
+        border: 2px solid var(--bs-border-color);
+    }
+    
+    .btn {
+        border-width: 2px;
+    }
+    
+    .form-control,
+    .form-select {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .card:hover {
+        transform: none;
+    }
+    
+    .search-input:focus {
+        transform: none;
+    }
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bs-body-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bs-border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-secondary);
+}
+
+/* Utility classes for hotel-specific styling */
+.hotel-card-header {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    border-bottom: 1px solid var(--bs-border-color);
+    font-weight: 600;
+}
+
+.hotel-stat-card {
+    border: none;
+    border-radius: var(--bs-border-radius-lg);
+    overflow: hidden;
+}
+
+.hotel-action-buttons .btn {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.hotel-action-buttons .btn:last-child {
+    margin-right: 0;
+}
+
+/* Status indicators */
+.status-available {
+    color: var(--bs-success);
+}
+
+.status-occupied {
+    color: var(--bs-danger);
+}
+
+.status-maintenance {
+    color: var(--bs-warning);
+}
+
+.status-pending {
+    color: var(--bs-info);
+}
+
+/* Booking reference styling */
+.booking-reference {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--bs-border-radius);
+    display: inline-block;
+}
+
+/* Quick booking form styling */
+.quick-booking-form {
+    background: linear-gradient(45deg, rgba(var(--bs-primary-rgb), 0.1), rgba(var(--bs-info-rgb), 0.1));
+    border-radius: var(--bs-border-radius-lg);
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+/* Dashboard widget styling */
+.dashboard-widget {
+    border-radius: var(--bs-border-radius-lg);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.dashboard-widget:hover {
+    box-shadow: var(--hotel-shadow-lg);
+}
+
+.dashboard-widget-header {
+    background: linear-gradient(135deg, var(--bs-dark), var(--bs-secondary));
+    color: var(--bs-light);
+    padding: 1rem;
+    font-weight: 600;
+}
+
+.dashboard-widget-body {
+    padding: 1.5rem;
+}
+
+/* Animation classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Success state styling */
+.success-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.success-state .success-icon {
+    font-size: 4rem;
+    color: var(--bs-success);
+    margin-bottom: 1rem;
+}
+
+.success-state .success-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--bs-success);
+    margin-bottom: 0.5rem;
+}
+
+.success-state .success-message {
+    color: var(--bs-body-color);
+    margin-bottom: 2rem;
+}
+
+/* Empty state styling */
+.empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--bs-secondary);
+}
+
+.empty-state .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state .empty-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state .empty-message {
+    margin-bottom: 2rem;
+}
+
+/* Loading state styling */
+.loading-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.loading-spinner {
+    font-size: 2rem;
+    color: var(--bs-primary);
+    margin-bottom: 1rem;
+}
+
+/* Error state styling */
+.error-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.error-state .error-icon {
+    font-size: 4rem;
+    color: var(--bs-danger);
+    margin-bottom: 1rem;
+}
+
+.error-state .error-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--bs-danger);
+    margin-bottom: 0.5rem;
+}
+
+.error-state .error-message {
+    color: var(--bs-body-color);
+    margin-bottom: 2rem;
+}
+
+/* Ensure all custom styles work with dark theme */
+[data-bs-theme="dark"] {
+    --hotel-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
+    --hotel-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.4);
+}
+
+[data-bs-theme="dark"] .card:hover {
+    box-shadow: var(--hotel-shadow-lg);
+}
+
+[data-bs-theme="dark"] .modal-content {
+    box-shadow: var(--hotel-shadow-lg);
+}
+
+[data-bs-theme="dark"] .alert {
+    box-shadow: var(--hotel-shadow);
+}
+
+/* Ensure proper contrast for all text */
+.text-contrast {
+    color: var(--bs-body-color);
+}
+
+/* Custom utility classes */
+.border-start-primary {
+    border-left: 4px solid var(--bs-primary);
+}
+
+.border-start-success {
+    border-left: 4px solid var(--bs-success);
+}
+
+.border-start-warning {
+    border-left: 4px solid var(--bs-warning);
+}
+
+.border-start-danger {
+    border-left: 4px solid var(--bs-danger);
+}
+
+.border-start-info {
+    border-left: 4px solid var(--bs-info);
+}
