@@ -392,7 +392,7 @@ def reports():
     category_bookings = db.session.query(
         RoomCategory.name,
         func.count(Booking.id).label('bookings')
-    ).join(Room).join(Booking).filter_by(payment_status='paid').group_by(RoomCategory.name).all()
+    ).select_from(RoomCategory).join(Room, Room.category_id == RoomCategory.id).join(Booking, Booking.room_id == Room.id).filter(Booking.payment_status == 'paid').group_by(RoomCategory.name).all()
     
     return render_template('admin/reports.html',
                          monthly_revenue=monthly_revenue,
