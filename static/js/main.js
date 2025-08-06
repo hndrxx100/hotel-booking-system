@@ -6,16 +6,16 @@
 $(document).ready(function() {
     // Initialize tooltips
     initializeTooltips();
-    
+
     // Initialize form validations
     initializeFormValidations();
-    
+
     // Initialize date pickers
     initializeDatePickers();
-    
+
     // Initialize auto-refresh functionality
     initializeAutoRefresh();
-    
+
     // Initialize notification system
     initializeNotifications();
 });
@@ -42,7 +42,7 @@ function initializeFormValidations() {
         }
         $(this).addClass('was-validated');
     });
-    
+
     // Phone number validation
     $('input[type="tel"], input[name*="phone"]').on('input', function() {
         const phone = $(this).val().replace(/\D/g, '');
@@ -52,19 +52,19 @@ function initializeFormValidations() {
             $(this).removeClass('is-valid').addClass('is-invalid');
         }
     });
-    
+
     // Email validation
     $('input[type="email"]').on('blur', function() {
         const email = $(this).val();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
+
         if (email === '' || emailRegex.test(email)) {
             $(this).removeClass('is-invalid').addClass('is-valid');
         } else {
             $(this).removeClass('is-valid').addClass('is-invalid');
         }
     });
-    
+
     // Password strength indicator
     $('input[type="password"]').on('input', function() {
         const password = $(this).val();
@@ -78,13 +78,13 @@ function initializeFormValidations() {
  */
 function calculatePasswordStrength(password) {
     let strength = 0;
-    
+
     if (password.length >= 8) strength += 1;
     if (password.match(/[a-z]/)) strength += 1;
     if (password.match(/[A-Z]/)) strength += 1;
     if (password.match(/[0-9]/)) strength += 1;
     if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
-    
+
     return strength;
 }
 
@@ -94,7 +94,7 @@ function calculatePasswordStrength(password) {
 function showPasswordStrength(input, strength) {
     let strengthText = '';
     let strengthClass = '';
-    
+
     switch (strength) {
         case 0:
         case 1:
@@ -118,10 +118,10 @@ function showPasswordStrength(input, strength) {
             strengthClass = 'text-success fw-bold';
             break;
     }
-    
+
     // Remove existing strength indicator
     input.next('.password-strength').remove();
-    
+
     // Add new strength indicator
     if (input.val().length > 0) {
         input.after(`<div class="password-strength small ${strengthClass}">Password strength: ${strengthText}</div>`);
@@ -135,23 +135,23 @@ function initializeDatePickers() {
     // Set minimum dates for check-in/check-out
     const today = new Date().toISOString().split('T')[0];
     const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-    
+
     $('input[name="check_in"]').attr('min', today);
     $('input[name="check_out"]').attr('min', tomorrow);
-    
+
     // Update check-out minimum when check-in changes
     $('input[name="check_in"]').on('change', function() {
         const checkInDate = new Date(this.value);
         const checkOutMin = new Date(checkInDate.getTime() + 86400000).toISOString().split('T')[0];
         $('input[name="check_out"]').attr('min', checkOutMin);
-        
+
         // Clear check-out if it's now invalid
         const checkOutValue = $('input[name="check_out"]').val();
         if (checkOutValue && checkOutValue <= this.value) {
             $('input[name="check_out"]').val('');
         }
     });
-    
+
     // Initialize bootstrap datepickers if available
     if ($.fn.datepicker) {
         $('.datepicker').datepicker({
@@ -175,7 +175,7 @@ function initializeAutoRefresh() {
             }
         }, 300000); // 5 minutes
     }
-    
+
     // Auto-refresh for booking management every 2 minutes
     if (window.location.pathname.includes('bookings')) {
         setInterval(function() {
@@ -199,16 +199,29 @@ function refreshBookingsTable() {
  * Initialize notification system
  */
 function initializeNotifications() {
-    // Auto-hide success alerts after 5 seconds
-    $('.alert-success').delay(5000).fadeOut('slow');
-    
-    // Auto-hide info alerts after 7 seconds
-    $('.alert-info').delay(7000).fadeOut('slow');
-    
-    // Keep error alerts visible until manually dismissed
-    $('.alert-danger').on('click', '.btn-close', function() {
-        $(this).closest('.alert').fadeOut('fast');
-    });
+    // Handle flash messages for modal
+    const flashMessages = window.flashMessages || [];
+    if (flashMessages.length > 0) {
+        const modal = $('#flashModal');
+        const modalTitle = modal.find('.modal-title');
+        const modalBody = modal.find('.modal-body');
+        const modalHeader = modal.find('.modal-header');
+
+        flashMessages.forEach(function([category, message]) {
+            if (category.startsWith('modal_type=')) {
+                const modalType = category.split('=')[1];
+                if (modalType === 'success') {
+                    modalTitle.text('Success');
+                    modalHeader.removeClass('bg-danger').addClass('bg-success text-white');
+                } else if (modalType === 'error') {
+                    modalTitle.text('Error');
+                    modalHeader.removeClass('bg-success').addClass('bg-danger text-white');
+                }
+                modalBody.html(message); // Use .html() to support potential HTML in messages
+                modal.modal('show');
+            }
+        });
+    }
 }
 
 /**
@@ -235,12 +248,16 @@ function hideButtonLoading(button) {
 /**
  * Format currency for display
  */
-function formatCurrency(amount, currency = 'USD') {
-    return new Intl.NumberFormat('en-US', {
+function formatCurrency(amount, currency = 'GHS') {
+    const formatted = new Intl.NumberFormat('en-GB', {
         style: 'currency',
         currency: currency
     }).format(amount);
+
+    // Replace 'GHS' with the Cedi symbol if needed
+    return formatted.replace('GHS', '₵');
 }
+
 
 /**
  * Format phone number for display
@@ -285,15 +302,15 @@ function showConfirmationDialog(title, message, callback) {
             </div>
         </div>
     `);
-    
+
     $('body').append(modal);
     modal.modal('show');
-    
+
     modal.find('#confirmAction').on('click', function() {
         callback();
         modal.modal('hide');
     });
-    
+
     modal.on('hidden.bs.modal', function() {
         modal.remove();
     });
@@ -305,7 +322,7 @@ function showConfirmationDialog(title, message, callback) {
 function showToast(message, type = 'info', duration = 5000) {
     const toastId = 'toast-' + Date.now();
     const bgClass = type === 'error' ? 'bg-danger' : type === 'success' ? 'bg-success' : 'bg-info';
-    
+
     const toast = $(`
         <div class="toast ${bgClass} text-white" id="${toastId}" role="alert">
             <div class="toast-header ${bgClass} text-white border-0">
@@ -318,20 +335,20 @@ function showToast(message, type = 'info', duration = 5000) {
             </div>
         </div>
     `);
-    
+
     // Create toast container if it doesn't exist
     if ($('#toast-container').length === 0) {
         $('body').append('<div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>');
     }
-    
+
     $('#toast-container').append(toast);
-    
+
     const bsToast = new bootstrap.Toast(toast[0], {
         delay: duration
     });
-    
+
     bsToast.show();
-    
+
     // Remove toast element after it's hidden
     toast.on('hidden.bs.toast', function() {
         $(this).remove();
@@ -352,7 +369,7 @@ $(window).scroll(function() {
     if ($(this).scrollTop() > 200) {
         if ($('#scrollToTop').length === 0) {
             $('body').append(`
-                <button id="scrollToTop" class="btn btn-primary position-fixed" 
+                <button id="scrollToTop" class="btn btn-primary position-fixed"
                         style="bottom: 20px; right: 20px; z-index: 9999; border-radius: 50%; width: 50px; height: 50px;"
                         onclick="scrollToTop()" title="Scroll to top">
                     <i class="fas fa-arrow-up"></i>
@@ -371,7 +388,7 @@ function initializeSearch() {
     $('.search-input').on('input', function() {
         const searchTerm = $(this).val().toLowerCase();
         const targetTable = $(this).data('target');
-        
+
         if (targetTable) {
             $(`${targetTable} tbody tr`).each(function() {
                 const rowText = $(this).text().toLowerCase();
@@ -394,7 +411,7 @@ $(document).ajaxError(function(event, xhr, settings, thrownError) {
         status: xhr.status,
         error: thrownError
     });
-    
+
     if (xhr.status === 401) {
         showToast('Session expired. Please log in again.', 'error');
         setTimeout(() => {
@@ -415,7 +432,7 @@ $(document).ajaxError(function(event, xhr, settings, thrownError) {
 $.ajaxSetup({
     beforeSend: function(xhr, settings) {
         if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-            const token = $('meta[name=csrf-token]').attr('content') || 
+            const token = $('meta[name=csrf-token]').attr('content') ||
                          $('input[name=csrf_token]').val();
             if (token) {
                 xhr.setRequestHeader("X-CSRFToken", token);
@@ -432,10 +449,10 @@ $('form').on('submit', function() {
     if (submitButton.data('submitted')) {
         return false;
     }
-    
+
     submitButton.data('submitted', true);
     showButtonLoading(submitButton);
-    
+
     // Re-enable after 5 seconds as fallback
     setTimeout(() => {
         submitButton.data('submitted', false);
@@ -449,7 +466,7 @@ $('form').on('submit', function() {
 function enableAutoSave(formSelector, key) {
     const form = $(formSelector);
     const storageKey = 'autosave_' + key;
-    
+
     // Load saved data
     const savedData = localStorage.getItem(storageKey);
     if (savedData) {
@@ -458,7 +475,7 @@ function enableAutoSave(formSelector, key) {
             form.find(`[name="${name}"]`).val(data[name]);
         });
     }
-    
+
     // Save data on input
     form.find('input, textarea, select').on('input change', function() {
         const formData = {};
@@ -469,7 +486,7 @@ function enableAutoSave(formSelector, key) {
         });
         localStorage.setItem(storageKey, JSON.stringify(formData));
     });
-    
+
     // Clear saved data on successful form submission
     form.on('submit', function() {
         setTimeout(() => {
@@ -485,27 +502,27 @@ function initializeAccessibility() {
     // Add skip to main content link
     if ($('#skip-to-main').length === 0) {
         $('body').prepend(`
-            <a href="#main-content" id="skip-to-main" class="visually-hidden-focusable btn btn-primary position-absolute" 
+            <a href="#main-content" id="skip-to-main" class="visually-hidden-focusable btn btn-primary position-absolute"
                style="top: 10px; left: 10px; z-index: 10000;">
                 Skip to main content
             </a>
         `);
     }
-    
+
     // Add main content landmark if not present
     if ($('main').length === 0) {
         $('body > .container, body > .container-fluid').first().wrap('<main id="main-content"></main>');
     } else {
         $('main').attr('id', 'main-content');
     }
-    
+
     // Enhance focus visibility
     $('button, a, input, select, textarea').on('focus', function() {
         $(this).addClass('focus-visible');
     }).on('blur', function() {
         $(this).removeClass('focus-visible');
     });
-    
+
     // Add ARIA labels to form controls without labels
     $('input, select, textarea').each(function() {
         if (!$(this).attr('aria-label') && !$(this).attr('aria-labelledby')) {

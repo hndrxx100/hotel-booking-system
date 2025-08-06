@@ -6,9 +6,15 @@ from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
+from dotenv import load_dotenv
+from flask_migrate import Migrate
+
+load_dotenv()
+
 
 class Base(DeclarativeBase):
     pass
+
 
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
@@ -23,34 +29,39 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 logging.basicConfig(level=logging.DEBUG)
 
 # configure the database
-# Use PostgreSQL as preferred
+# Use MySQL as preferred
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # initialize extensions
 db.init_app(app)
+migrate = Migrate(app, db)
 login_manager.init_app(app)
 csrf.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in to access this page.'
+
 
 @login_manager.user_loader
 def load_user(user_id):
     from models import Staff
     return Staff.query.get(int(user_id))
 
+
 with app.app_context():
     # Import models to ensure tables are created
     import models
-    db.create_all()
-    
+
+    # db.create_all()
+
     # Create default admin user if none exists
     from models import Staff
     from werkzeug.security import generate_password_hash
-    
+
     admin = Staff.query.filter_by(role='admin').first()
     if not admin:
         admin_user = Staff(

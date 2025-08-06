@@ -27,6 +27,11 @@
                         <i class="fas fa-door-open me-2"></i>Individual Rooms
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reserved-rooms-tab" data-bs-toggle="tab" data-bs-target="#reserved-rooms" type="button" role="tab">
+                        <i class="fas fa-book me-2"></i>Reserved Rooms
+                    </button>
+                </li>
             </ul>
         </div>
     </div>
@@ -66,7 +71,7 @@
                                             {% for category in categories %}
                                                 <tr>
                                                     <td><strong>{{ category.name }}</strong></td>
-                                                    <td>${{ "%.2f"|format(category.base_price) }}/night</td>
+                                                    <td>GH₵ {{ "%.2f"|format(category.base_price) }}/night</td>
                                                     <td>{{ category.capacity }} guests</td>
                                                     <td>{{ category.description[:50] }}{% if category.description|length > 50 %}...{% endif %}</td>
                                                     <td>
@@ -132,7 +137,6 @@
                                             <tr>
                                                 <th>Room Number</th>
                                                 <th>Category</th>
-                                                <th>Floor</th>
                                                 <th>Status</th>
                                                 <th>Current Booking</th>
                                                 <th>Actions</th>
@@ -143,18 +147,24 @@
                                                 <tr>
                                                     <td><strong>{{ room.room_number }}</strong></td>
                                                     <td>{{ room.category.name }}</td>
-                                                    <td>Floor {{ room.floor }}</td>
                                                     <td>
-                                                        <span class="badge bg-{% if room.is_available %}success{% else %}warning{% endif %}">
-                                                            {% if room.is_available %}Available{% else %}Maintenance{% endif %}
+                                                        <span class="badge bg-{% if room.status == 'available' %}success{% elif room.status == 'occupied' %}info{% elif room.status == 'dirty' %}warning{% elif room.status == 'maintenance' %}danger{% else %}secondary{% endif %}">
+                                                            {{ room.status.title() if room.status else 'Unknown' }}
                                                         </span>
+                                                        {% if room.status == 'dirty' %}
+                                                            <a href="{{ url_for('mark_room_clean', room_id=room.id) }}"
+                                                               class="btn btn-outline-success btn-sm mark-clean-btn"
+                                                               title="Mark Room as Clean">
+                                                                <i class="fas fa-broom"></i>
+                                                            </a>
+                                                        {% endif %}
                                                     </td>
                                                     <td>
                                                         {% set active_booking = room.bookings|selectattr('status', 'in', ['confirmed', 'checked_in'])|first %}
                                                         {% if active_booking %}
                                                             <small class="text-info">
                                                                 {{ active_booking.guest.name }}<br>
-                                                                {{ active_booking.check_in }} - {{ active_booking.check_out }}
+                                                                {{ active_booking.check_in.strftime('%d %B %Y') }} - {{ active_booking.check_out.strftime('%d %B %Y') }}
                                                             </small>
                                                         {% else %}
                                                             <span class="text-muted">No active booking</span>
@@ -166,12 +176,11 @@
                                                                     data-room-id="{{ room.id }}"
                                                                     data-room-number="{{ room.room_number }}"
                                                                     data-category-id="{{ room.category_id }}"
-                                                                    data-floor="{{ room.floor }}"
-                                                                    data-is-available="{{ room.is_available|string|lower }}"
+                                                                    data-status="{{ room.status or 'available' }}"
                                                                     data-maintenance-notes="{{ room.maintenance_notes or '' }}">
                                                                 <i class="fas fa-edit"></i>
                                                             </button>
-                                                            {% if not active_booking %}
+                                                            {% if not active_booking and room.status not in ['occupied', 'dirty'] %}
                                                                 <button class="btn btn-outline-danger"
                                                                         onclick="deleteRoom({{ room.id }}, '{{ room.room_number }}')">
                                                                     <i class="fas fa-trash"></i>
@@ -195,6 +204,102 @@
                 </div>
             </div>
         </div>
+
+        <!-- Reserved Rooms Tab -->
+        <div class="tab-pane fade" id="reserved-rooms" role="tabpanel">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4>Reserved Rooms</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <form id="reserved-rooms-filter-form">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label">Filter</label>
+                                <select name="filter" class="form-select">
+                                    <option value="today" {% if filter_type == 'today' %}selected{% endif %}>Today</option>
+                                    <option value="tomorrow" {% if filter_type == 'tomorrow' %}selected{% endif %}>Tomorrow</option>
+                                    <option value="this_week" {% if filter_type == 'this_week' %}selected{% endif %}>This Week</option>
+                                    <option value="custom" {% if filter_type == 'custom' %}selected{% endif %}>Custom</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Room Category</label>
+                                <select name="category_id" class="form-select">
+                                    <option value="">All Categories</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3" id="custom_dates" {% if filter_type != 'custom' %}style="display:none;"{% endif %}>
+                                <label class="form-label">Start Date</label>
+                                <input type="date" name="start_date" class="form-control" value="{{ start_date | default(today) }}">
+                            </div>
+                            <div class="col-md-3" id="custom_dates_end" {% if filter_type != 'custom' %}style="display:none;"{% endif %}>
+                                <label class="form-label">End Date</label>
+                                <input type="date" name="end_date" class="form-control" value="{{ end_date | default(today) }}">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-primary w-100" onclick="fetchReservedRooms()">
+                                    <i class="fas fa-filter me-1"></i>Apply
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="reservedRoomsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Room Number</th>
+                                            <th>Category</th>
+                                            <th>Guest</th>
+                                            <th>Booking Reference</th>
+                                            <th>Check-In</th>
+                                            <th>Check-Out</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for booking in reserved_bookings %}
+                                            <tr>
+                                                <td><strong>{{ booking.room.room_number }}</strong></td>
+                                                <td>{{ booking.room.category.name }}</td>
+                                                <td>{{ booking.guest.name }}</td>
+                                                <td>{{ booking.reference }}</td>
+                                                <td>{{ booking.check_in.strftime('%d %B %Y') }}</td>
+                                                <td>{{ booking.check_out.strftime('%d %B %Y') }}</td>
+                                                <td>
+                                                    <span class="badge bg-{% if booking.status == 'pending' %}warning{% elif booking.status == 'confirmed' %}success{% elif booking.status == 'checked_in' %}info{% else %}secondary{% endif %}">
+                                                        {{ booking.status.replace('_', ' ').title() }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% if not reserved_bookings %}
+                                <div class="text-center text-muted py-5">
+                                    <i class="fas fa-book fa-3x mb-3"></i>
+                                    <p>No reserved rooms for the selected period.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -206,7 +311,7 @@
                 <h5 class="modal-title">Add Room Category</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST">
+            <form method="POST" action="{{ url_for('add_category') }}">
                 {{ category_form.hidden_tag() }}
                 <input type="hidden" name="form_type" value="category">
                 <div class="modal-body">
@@ -268,7 +373,7 @@
                 <h5 class="modal-title">Add Room</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST">
+            <form method="POST" action="{{ url_for('add_room') }}">
                 {{ room_form.hidden_tag() }}
                 <input type="hidden" name="form_type" value="room">
                 <div class="modal-body">
@@ -291,20 +396,12 @@
                                 </div>
                             {% endif %}
                         </div>
-                        <div class="col-12">
-                            {{ room_form.floor.label(class="form-label") }}
-                            {{ room_form.floor(class="form-control") }}
-                            {% if room_form.floor.errors %}
-                                <div class="text-danger small">
-                                    {% for error in room_form.floor.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check">
-                                {{ room_form.is_available(class="form-check-input", checked=true) }}
-                                {{ room_form.is_available.label(class="form-check-label") }}
-                            </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status">
+                                <option value="available">Available</option>
+                                <option value="maintenance">Maintenance</option>
+                            </select>
                         </div>
                         <div class="col-12">
                             {{ room_form.maintenance_notes.label(class="form-label") }}
@@ -331,7 +428,7 @@
                 <h5 class="modal-title">Edit Room Category</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="editCategoryForm" method="POST">
+            <form id="editCategoryForm" method="POST" action="">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="form_type" value="category">
                 <div class="modal-body">
@@ -378,7 +475,7 @@
                 <h5 class="modal-title">Edit Room</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="editRoomForm" method="POST">
+            <form id="editRoomForm" method="POST" action="">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="form_type" value="room">
                 <div class="modal-body">
@@ -395,15 +492,14 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label">Floor</label>
-                            <input type="number" class="form-control" name="floor" required>
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" name="is_available" value="y">
-                                <label class="form-check-label">Available</label>
-                            </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status">
+                                <option value="available">Available</option>
+                                <option value="occupied">Occupied</option>
+                                <option value="dirty">Dirty</option>
+                                <option value="maintenance">Maintenance</option>
+                            </select>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Maintenance Notes</label>
@@ -427,15 +523,69 @@
 <script>
 $(document).ready(function() {
     // Initialize DataTables
-    $('#categoriesTable').DataTable({
+    const categoriesTable = $('#categoriesTable').DataTable({
         pageLength: 10
     });
-    
-    $('#roomsTable').DataTable({
+
+    const roomsTable = $('#roomsTable').DataTable({
         pageLength: 25,
         order: [[0, 'asc']] // Sort by room number
     });
-    
+
+    const reservedRoomsTable = $('#reservedRoomsTable').DataTable({
+        pageLength: 25,
+        order: [[0, 'asc']] // Sort by room number
+    });
+
+    // Function to fetch reserved rooms via AJAX
+    function fetchReservedRooms() {
+        const filter = $('select[name="filter"]').val();
+        const categoryId = $('select[name="category_id"]').val();
+        const startDate = $('input[name="start_date"]').val();
+        const endDate = $('input[name="end_date"]').val();
+
+        $.ajax({
+            url: '{{ url_for("api_reserved_rooms") }}',
+            method: 'GET',
+            data: {
+                filter: filter,
+                category_id: categoryId,
+                start_date: startDate,
+                end_date: endDate
+            },
+            success: function(response) {
+                // Clear existing table data
+                reservedRoomsTable.clear();
+
+                // Update table with new data
+                if (response.bookings.length > 0) {
+                    response.bookings.forEach(booking => {
+                        reservedRoomsTable.row.add([
+                            `<strong>${booking.room_number}</strong>`,
+                            booking.category,
+                            booking.guest,
+                            booking.reference,
+                            booking.check_in,
+                            booking.check_out,
+                            `<span class="badge bg-${booking.status.toLowerCase().includes('pending') ? 'warning' : booking.status.toLowerCase().includes('confirmed') ? 'success' : booking.status.toLowerCase().includes('checked') ? 'info' : 'secondary'}">${booking.status}</span>`
+                        ]);
+                    });
+                    $('#reserved-rooms .text-center.text-muted').hide();
+                } else {
+                    $('#reserved-rooms .text-center.text-muted').show();
+                }
+                reservedRoomsTable.draw();
+
+                // Update date inputs
+                $('input[name="start_date"]').val(response.start_date);
+                $('input[name="end_date"]').val(response.end_date);
+            },
+            error: function(xhr) {
+                alert(xhr.responseJSON?.error || 'Error fetching reserved rooms.');
+            }
+        });
+    }
+
     // Edit category button clicks
     $('.btn-edit-category').on('click', function() {
         const categoryId = $(this).data('category-id');
@@ -444,35 +594,85 @@ $(document).ready(function() {
         const capacity = $(this).data('capacity');
         const description = $(this).data('description');
         const amenities = $(this).data('amenities');
-        
+
         $('#editCategoryForm input[name="name"]').val(name);
         $('#editCategoryForm input[name="base_price"]').val(price);
         $('#editCategoryForm input[name="capacity"]').val(capacity);
         $('#editCategoryForm textarea[name="description"]').val(description);
         $('#editCategoryForm textarea[name="amenities"]').val(amenities);
-        
+
         $('#editCategoryForm').attr('action', `/admin/category/edit/${categoryId}`);
         $('#editCategoryModal').modal('show');
     });
-    
+
     // Edit room button clicks
     $('.btn-edit-room').on('click', function() {
         const roomId = $(this).data('room-id');
         const roomNumber = $(this).data('room-number');
         const categoryId = $(this).data('category-id');
-        const floor = $(this).data('floor');
-        const isAvailable = $(this).data('is-available');
+        const status = $(this).data('status');
         const maintenanceNotes = $(this).data('maintenance-notes');
-        
+
         $('#editRoomForm input[name="room_number"]').val(roomNumber);
         $('#editRoomForm select[name="category_id"]').val(categoryId);
-        $('#editRoomForm input[name="floor"]').val(floor);
-        $('#editRoomForm input[name="is_available"]').prop('checked', isAvailable === 'true');
+        $('#editRoomForm select[name="status"]').val(status || 'available');
         $('#editRoomForm textarea[name="maintenance_notes"]').val(maintenanceNotes);
-        
+
         $('#editRoomForm').attr('action', `/admin/room/edit/${roomId}`);
         $('#editRoomModal').modal('show');
     });
+
+    // Handle mark clean buttons
+    $('.mark-clean-btn').on('click', function(e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
+        $.get(url, function() {
+            location.reload();
+        }).fail(function() {
+            alert('Error marking room as clean.');
+        });
+    });
+
+    // Handle filter form changes
+    $('select[name="filter"]').on('change', function() {
+        const customDates = $('#custom_dates, #custom_dates_end');
+        customDates.toggle(this.value === 'custom');
+        fetchReservedRooms();
+    });
+
+    $('select[name="category_id"], input[name="start_date"], input[name="end_date"]').on('change', function() {
+        fetchReservedRooms();
+    });
+
+    // Reset to today when switching to Reserved Rooms tab
+    $('#reserved-rooms-tab').on('shown.bs.tab', function() {
+        $('select[name="filter"]').val('today');
+        $('select[name="category_id"]').val('');
+        $('#custom_dates, #custom_dates_end').hide();
+        fetchReservedRooms();
+    });
+
+    // Fetch reserved rooms on page load if on Reserved Rooms tab
+    if ($('#reserved-rooms-tab').hasClass('active')) {
+        fetchReservedRooms();
+    }
+
+    // Optional: Display current date in the header
+    function updateDateTime() {
+        const now = new Date();
+        const options = {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'Africa/Accra'
+        };
+        const formattedDateTime = now.toLocaleDateString('en-GB', options);
+        console.log(formattedDateTime);
+    }
+
+    updateDateTime();
 });
 
 function deleteCategory(categoryId, categoryName) {

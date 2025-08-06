@@ -72,6 +72,7 @@
                                         <th>Reference</th>
                                         <th>Guest</th>
                                         <th>Room</th>
+                                        <th>Room Status</th>
                                         <th>Check-in</th>
                                         <th>Check-out</th>
                                         <th>Nights</th>
@@ -79,6 +80,8 @@
                                         <th>Payment</th>
                                         <th>Status</th>
                                         <th>Created</th>
+                                        <th>Check-in Date (Hidden)</th>
+                                        <th>Check-out Date (Hidden)</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -91,10 +94,22 @@
                                                 <small class="text-muted">{{ booking.guest.phone }}</small>
                                             </td>
                                             <td>{{ booking.room.room_number }} ({{ booking.room.category.name }})</td>
-                                            <td>{{ booking.check_in.strftime('%m/%d/%Y') }}</td>
-                                            <td>{{ booking.check_out.strftime('%m/%d/%Y') }}</td>
+                                            <td>
+                                                <span class="badge bg-{% if booking.room.status == 'occupied' %}info{% elif booking.room.status == 'dirty' %}warning{% elif booking.room.status == 'maintenance' %}danger{% else %}success{% endif %}">
+                                                    {{ booking.room.status.title() if booking.room.status else 'Unknown' }}
+                                                </span>
+                                                {% if booking.room.status == 'dirty' %}
+                                                    <a href="{{ url_for('mark_room_clean', room_id=booking.room.id) }}"
+                                                       class="btn btn-outline-success btn-sm mark-clean-btn"
+                                                       title="Mark Room as Clean">
+                                                        <i class="fas fa-broom"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ booking.check_in.strftime('%d %B %Y') }}</td>
+                                            <td>{{ booking.check_out.strftime('%d %B %Y') }}</td>
                                             <td>{{ booking.nights }}</td>
-                                            <td>${{ "%.2f"|format(booking.total_price) }}</td>
+                                            <td>GH₵ {{ "{:,.2f}".format(booking.total_price) }}</td>
                                             <td>
                                                 <span class="badge bg-{% if booking.payment_status == 'paid' %}success{% elif booking.payment_status == 'cancelled' %}danger{% else %}warning{% endif %}">
                                                     {{ booking.payment_status.title() }}
@@ -105,7 +120,9 @@
                                                     {{ booking.status.replace('_', ' ').title() }}
                                                 </span>
                                             </td>
-                                            <td>{{ booking.created_at.strftime('%m/%d/%Y %I:%M %p') }}</td>
+                                            <td>{{ booking.created_at.strftime('%d %B %Y %I:%M %p') }}</td>
+                                            <td style="display: none;">{{ booking.check_in.strftime('%Y-%m-%d') }}</td>
+                                            <td style="display: none;">{{ booking.check_out.strftime('%Y-%m-%d') }}</td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
                                                     {% if booking.payment_status == 'unpaid' %}
@@ -115,15 +132,14 @@
                                                             <i class="fas fa-dollar-sign"></i>
                                                         </a>
                                                     {% endif %}
-                                                    
                                                     {% if booking.payment_status == 'paid' and booking.status == 'confirmed' %}
                                                         <a href="{{ url_for('check_in', booking_id=booking.id) }}"
-                                                           class="btn btn-outline-primary"
-                                                           title="Check In">
+                                                           class="btn btn-outline-primary {% if booking.check_in != today %}disabled{% endif %}"
+                                                           title="{% if booking.check_in != today %}Check-in only allowed on {{ booking.check_in.strftime('%d %B %Y') }}{% else %}Check In{% endif %}"
+                                                           {% if booking.check_in != today %}aria-disabled="true"{% endif %}>
                                                             <i class="fas fa-sign-in-alt"></i>
                                                         </a>
                                                     {% endif %}
-                                                    
                                                     {% if booking.status == 'checked_in' %}
                                                         <a href="{{ url_for('check_out', booking_id=booking.id) }}"
                                                            class="btn btn-outline-info"
@@ -131,11 +147,27 @@
                                                             <i class="fas fa-sign-out-alt"></i>
                                                         </a>
                                                     {% endif %}
-                                                    
-                                                    {% if booking.status != 'cancelled' and booking.status != 'checked_out' %}
+                                                    {% if booking.status not in ['checked_in', 'checked_out', 'cancelled'] %}
+                                                        <a href="{{ url_for('modify_booking', booking_reference=booking.reference) }}"
+                                                           class="btn btn-outline-warning"
+                                                           title="Modify Booking">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
                                                         <button class="btn btn-outline-danger"
                                                                 onclick="cancelBooking({{ booking.id }}, '{{ booking.reference }}')"
                                                                 title="Cancel Booking">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    {% else %}
+                                                        <a href="{{ url_for('modify_booking', booking_reference=booking.reference) }}"
+                                                           class="btn btn-outline-warning disabled"
+                                                           title="Cannot modify: Booking is checked in, checked out, or cancelled"
+                                                           aria-disabled="true">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <button class="btn btn-outline-danger disabled"
+                                                                title="Cannot cancel: Booking is checked in, checked out, or cancelled"
+                                                                aria-disabled="true">
                                                             <i class="fas fa-times"></i>
                                                         </button>
                                                     {% endif %}
@@ -145,6 +177,10 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Note: Bookings that are checked in, checked out, or cancelled cannot be modified or cancelled.
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-5">
@@ -172,8 +208,10 @@
                 <ul class="text-muted">
                     <li>Mark the booking as cancelled</li>
                     <li>Free up the room for other bookings</li>
-                    <li>Change payment status accordingly</li>
+                    <li>Change payment status to cancelled</li>
                 </ul>
+                <p class="text-warning">Note: Paid bookings cannot be cancelled within 48 hours of check-in.</p>
+                <div id="refundMessage"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Booking</button>
@@ -188,6 +226,17 @@
 
 {% block extra_js %}
 <script>
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'Africa/Accra'
+    });
+}
+
 let bookingsTable;
 
 $(document).ready(function() {
@@ -196,13 +245,38 @@ $(document).ready(function() {
         order: [[9, 'desc']], // Sort by created date
         pageLength: 25,
         columnDefs: [
-            { orderable: false, targets: [10] } // Disable sorting on actions column
+            { orderable: false, targets: [10, 11, 12, 13] }, // Disable sorting on hidden columns and actions
+            { visible: false, targets: [11, 12] } // Hide check-in and check-out columns
         ]
     });
-    
+
     // Filter functionality
     $('#paymentStatusFilter, #bookingStatusFilter, #dateRangeFilter').on('change', function() {
         applyFilters();
+    });
+
+    // Restore filters after page reload
+    const paymentStatus = sessionStorage.getItem('paymentStatusFilter');
+    const bookingStatus = sessionStorage.getItem('bookingStatusFilter');
+    const dateRange = sessionStorage.getItem('dateRangeFilter');
+
+    if (paymentStatus) $('#paymentStatusFilter').val(paymentStatus);
+    if (bookingStatus) $('#bookingStatusFilter').val(bookingStatus);
+    if (dateRange) $('#dateRangeFilter').val(dateRange);
+
+    if (paymentStatus || bookingStatus || dateRange) {
+        applyFilters();
+    }
+
+    // Handle mark clean buttons
+    $('.mark-clean-btn').on('click', function(e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
+        $.get(url, function() {
+            location.reload();
+        }).fail(function() {
+            alert('Error marking room as clean.');
+        });
     });
 });
 
@@ -210,67 +284,117 @@ function applyFilters() {
     const paymentStatus = $('#paymentStatusFilter').val();
     const bookingStatus = $('#bookingStatusFilter').val();
     const dateRange = $('#dateRangeFilter').val();
-    
-    // Clear previous filters
+
+    // Clear previous filters and custom searches
     bookingsTable.columns().search('');
-    
+    $.fn.dataTable.ext.search = [];
+
     // Apply payment status filter
     if (paymentStatus) {
-        bookingsTable.column(7).search(paymentStatus);
+        bookingsTable.column(8).search(paymentStatus);
     }
-    
+
     // Apply booking status filter
     if (bookingStatus) {
-        bookingsTable.column(8).search(bookingStatus.replace('_', ' '));
+        bookingsTable.column(9).search(bookingStatus.replace('_', ' '));
     }
-    
-    // Apply date range filter (simplified - you could implement more complex date filtering)
+
+    // Apply date range filter
     if (dateRange) {
         const today = new Date();
-        let filterDate = '';
-        
+        const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+
         switch(dateRange) {
             case 'today':
-                filterDate = today.toLocaleDateString();
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                        const checkIn = data[11]; // Check-in date (YYYY-MM-DD)
+                        const checkOut = data[12]; // Check-out date (YYYY-MM-DD)
+                        return checkIn === todayStr || checkOut === todayStr;
+                    }
+                );
                 break;
             case 'this_week':
-                // Implement week filtering logic
+                const startOfWeek = new Date(today);
+                startOfWeek.setDate(today.getDate() - today.getDay());
+                const startOfWeekStr = startOfWeek.toISOString().split('T')[0];
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+                const endOfWeekStr = endOfWeek.toISOString().split('T')[0];
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                        const checkIn = new Date(data[11]);
+                        const checkOut = new Date(data[12]);
+                        const start = new Date(startOfWeekStr);
+                        const end = new Date(endOfWeekStr);
+                        return (checkIn >= start && checkIn <= end) ||
+                               (checkOut >= start && checkOut <= end) ||
+                               (checkIn <= start && checkOut >= end);
+                    }
+                );
                 break;
             case 'this_month':
-                filterDate = (today.getMonth() + 1).toString().padStart(2, '0');
+                const filterMonth = today.toISOString().slice(0, 7); // YYYY-MM
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                        const checkIn = data[11]; // YYYY-MM-DD
+                        return checkIn.startsWith(filterMonth);
+                    }
+                );
                 break;
         }
-        
-        if (filterDate) {
-            bookingsTable.column(9).search(filterDate);
-        }
     }
-    
+
     bookingsTable.draw();
+
+    // Store filters in sessionStorage
+    sessionStorage.setItem('paymentStatusFilter', paymentStatus);
+    sessionStorage.setItem('bookingStatusFilter', bookingStatus);
+    sessionStorage.setItem('dateRangeFilter', dateRange);
 }
 
 function clearFilters() {
     $('#paymentStatusFilter, #bookingStatusFilter, #dateRangeFilter').val('');
-    bookingsTable.columns().search('').draw();
+    bookingsTable.columns().search('');
+    $.fn.dataTable.ext.search = [];
+    bookingsTable.draw();
+    sessionStorage.removeItem('paymentStatusFilter');
+    sessionStorage.removeItem('bookingStatusFilter');
+    sessionStorage.removeItem('dateRangeFilter');
 }
 
 function cancelBooking(bookingId, bookingRef) {
     $('#cancelBookingRef').text(bookingRef);
     $('#confirmCancelBtn').data('booking-id', bookingId);
+    $('#refundMessage').empty(); // Clear previous messages
+    $.get(`/api/booking_details/${bookingId}`, function(data) {
+        let refundMessage = '';
+        if (data.payment_status === 'paid') {
+            const checkInDate = new Date(data.check_in);
+            const today = new Date();
+            const daysUntilCheckIn = (checkInDate - today) / (1000 * 60 * 60 * 24);
+            if (daysUntilCheckIn <= 2) {
+                refundMessage = '<p class="text-danger">Cannot cancel: Within 48 hours of check-in.</p>';
+                $('#confirmCancelBtn').prop('disabled', true);
+            } else {
+                refundMessage = '<li>Issue a refund for the paid amount.</li>';
+                $('#confirmCancelBtn').prop('disabled', false);
+            }
+        } else {
+            refundMessage = '<li>No refund required (unpaid booking).</li>';
+            $('#confirmCancelBtn').prop('disabled', false);
+        }
+        $('#refundMessage').html(refundMessage);
+    }).fail(function() {
+        $('#refundMessage').html('<p class="text-danger">Error fetching booking details.</p>');
+        $('#confirmCancelBtn').prop('disabled', true);
+    });
     $('#cancelBookingModal').modal('show');
 }
 
 $('#confirmCancelBtn').on('click', function() {
     const bookingId = $(this).data('booking-id');
-    
-    // Here you would typically make an AJAX call to cancel the booking
-    // For now, we'll just reload the page
     window.location.href = `/cancel_booking_admin/${bookingId}`;
 });
-
-// Auto-refresh table every 2 minutes
-setInterval(function() {
-    location.reload();
-}, 120000);
 </script>
 {% endblock %}

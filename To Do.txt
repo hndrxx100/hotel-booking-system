@@ -1,0 +1,7 @@
+1. Room availability function
+2. Modify booking modal
+3. Email functionality
+4. Allow check ins only on check in dates
+5. Check general hotel logic
+
+ok so this is my final year project and i think adding payment will delay me and i also want to deliver it to the hotel after i am done but for now i just need to have a working system, so that i can graduate. how do i convince my supervisor that of my current payment method lol. cause right now when someone makes a booking, we show booking details and tell them their booking will be canceled in the next hour if they dont make payment. mind you this is for both pay in person and momo lol confusing right. idk man i was thinking about using evolutionary model so that i can say this is just for the booking no payment yet so that in later versions, we can add the payment module. so right now, after we show them their booking details we ask them to pay throught momo. so i was thinking, we will send the email with instructions on payment for people that selects pay with momo and for people that select pay in person, we still send an email, but this one, we ask them to make part payment. but because we dont have a mechanism for payment in the system yet, that means, when the guest makes their payment, we need to manually mark them as paid in the dashboard otherwise our auto cancel schedular will cancel it after an hour if there's no payment. idk what do you suggest with the evolutionary model. how do we handle it and convice the supervisor for it to make sense

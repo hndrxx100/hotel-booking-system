@@ -31,7 +31,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-xl-3 col-md-6">
             <div class="card bg-success text-white">
                 <div class="card-body">
@@ -47,7 +47,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-xl-3 col-md-6">
             <div class="card bg-warning text-white">
                 <div class="card-body">
@@ -63,7 +63,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-xl-3 col-md-6">
             <div class="card bg-info text-white">
                 <div class="card-body">
@@ -130,7 +130,7 @@
                     <span class="badge bg-primary">{{ checkins_today }}</span>
                 </div>
                 <div class="card-body">
-                    {% set todays_checkins = recent_bookings|selectattr('check_in', 'equalto', moment().date())|selectattr('status', 'equalto', 'confirmed')|list %}
+                    {% set todays_checkins = todays_checkins %}
                     {% if todays_checkins %}
                         <div class="table-responsive">
                             <table class="table table-sm table-hover">
@@ -153,10 +153,13 @@
                                             <td>{{ booking.nights }}</td>
                                             <td>
                                                 {% if booking.status == 'confirmed' %}
-                                                    <a href="{{ url_for('check_in', booking_id=booking.id) }}" 
-                                                       class="btn btn-sm btn-success">
-                                                        <i class="fas fa-sign-in-alt me-1"></i>Check In
-                                                    </a>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="{{ url_for('check_in', booking_id=booking.id) }}"
+                                                           class="btn btn-outline-primary"
+                                                           title="Check In">
+                                                            <i class="fas fa-sign-in-alt"></i>
+                                                        </a>
+                                                    </div>
                                                 {% else %}
                                                     <span class="badge bg-success">Checked In</span>
                                                 {% endif %}
@@ -175,7 +178,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Check-outs Today -->
         <div class="col-lg-6">
             <div class="card">
@@ -186,7 +189,7 @@
                     <span class="badge bg-success">{{ checkouts_today }}</span>
                 </div>
                 <div class="card-body">
-                    {% set todays_checkouts = recent_bookings|selectattr('check_out', 'equalto', moment().date())|selectattr('status', 'equalto', 'checked_in')|list %}
+                    {% set todays_checkouts = todays_checkouts %}
                     {% if todays_checkouts %}
                         <div class="table-responsive">
                             <table class="table table-sm table-hover">
@@ -206,13 +209,21 @@
                                                 <small class="text-muted">{{ booking.reference }}</small>
                                             </td>
                                             <td>{{ booking.room.room_number }}</td>
-                                            <td>${{ "%.2f"|format(booking.total_price) }}</td>
+                                            <td>GH₵ {{ "%.2f"|format(booking.total_price) }}</td>
                                             <td>
                                                 {% if booking.status == 'checked_in' %}
-                                                    <a href="{{ url_for('check_out', booking_id=booking.id) }}" 
-                                                       class="btn btn-sm btn-info">
-                                                        <i class="fas fa-sign-out-alt me-1"></i>Check Out
-                                                    </a>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="{{ url_for('check_out', booking_id=booking.id) }}"
+                                                           class="btn btn-outline-info"
+                                                           title="Check Out">
+                                                            <i class="fas fa-sign-out-alt"></i>
+                                                        </a>
+                                                        <a href="{{ url_for('receptionist_mark_room_clean', room_id=booking.room.id) }}"
+                                                           class="btn btn-outline-success"
+                                                           title="Mark Room as Clean">
+                                                            <i class="fas fa-broom"></i>
+                                                        </a>
+                                                    </div>
                                                 {% else %}
                                                     <span class="badge bg-dark">Checked Out</span>
                                                 {% endif %}
@@ -269,7 +280,7 @@
                                                 <small class="text-muted">{{ booking.guest.phone }}</small>
                                             </td>
                                             <td>{{ booking.room.room_number }}</td>
-                                            <td>{{ booking.check_in.strftime('%m/%d/%Y') }}</td>
+                                            <td>{{ booking.check_in.strftime('%d %B %Y') }}</td>
                                             <td>
                                                 <span class="badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'cancelled' %}danger{% elif booking.status == 'checked_in' %}info{% elif booking.status == 'checked_out' %}dark{% else %}secondary{% endif %}">
                                                     {{ booking.status.replace('_', ' ').title() }}
@@ -289,7 +300,6 @@
                                                             <i class="fas fa-dollar-sign"></i>
                                                         </a>
                                                     {% endif %}
-                                                    
                                                     {% if booking.payment_status == 'paid' and booking.status == 'confirmed' %}
                                                         <a href="{{ url_for('check_in', booking_id=booking.id) }}"
                                                            class="btn btn-outline-primary"
@@ -297,7 +307,6 @@
                                                             <i class="fas fa-sign-in-alt"></i>
                                                         </a>
                                                     {% endif %}
-                                                    
                                                     {% if booking.status == 'checked_in' %}
                                                         <a href="{{ url_for('check_out', booking_id=booking.id) }}"
                                                            class="btn btn-outline-info"
@@ -357,7 +366,7 @@ $(document).ready(function() {
     setInterval(function() {
         location.reload();
     }, 120000);
-    
+
     // Add hover effects to stat cards
     $('.card').hover(
         function() {
@@ -371,95 +380,73 @@ $(document).ready(function() {
 
 function showRoomStatus() {
     $('#roomStatusModal').modal('show');
-    
-    // Load room status (this would typically be an AJAX call)
-    setTimeout(function() {
-        const mockRoomStatus = `
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="card border-success">
-                        <div class="card-body text-center">
-                            <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
-                            <h6>Available Rooms</h6>
-                            <h4 class="text-success">24</h4>
+
+    $.ajax({
+        url: '/receptionist/room_status',
+        method: 'GET',
+        success: function(data) {
+            const roomStatusHtml = `
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
+                                <h6>Available Rooms</h6>
+                                <h4 class="text-success">${data.total.available}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-danger">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users text-danger fa-2x mb-2"></i>
+                                <h6>Occupied Rooms</h6>
+                                <h4 class="text-danger">${data.total.occupied}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-warning">
+                            <div class="card-body text-center">
+                                <i class="fas fa-broom text-warning fa-2x mb-2"></i>
+                                <h6>Dirty Rooms</h6>
+                                <h4 class="text-warning">${data.total.dirty}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-secondary">
+                            <div class="card-body text-center">
+                                <i class="fas fa-tools text-secondary fa-2x mb-2"></i>
+                                <h6>Maintenance</h6>
+                                <h4 class="text-secondary">${data.total.maintenance}</h4>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card border-danger">
-                        <div class="card-body text-center">
-                            <i class="fas fa-users text-danger fa-2x mb-2"></i>
-                            <h6>Occupied Rooms</h6>
-                            <h4 class="text-danger">18</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-warning">
-                        <div class="card-body text-center">
-                            <i class="fas fa-tools text-warning fa-2x mb-2"></i>
-                            <h6>Maintenance</h6>
-                            <h4 class="text-warning">3</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mt-4">
-                <h6>Quick Room Overview</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Floor</th>
-                                <th>Available</th>
-                                <th>Occupied</th>
-                                <th>Maintenance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Floor 1</td>
-                                <td><span class="badge bg-success">8</span></td>
-                                <td><span class="badge bg-danger">6</span></td>
-                                <td><span class="badge bg-warning">1</span></td>
-                            </tr>
-                            <tr>
-                                <td>Floor 2</td>
-                                <td><span class="badge bg-success">10</span></td>
-                                <td><span class="badge bg-danger">7</span></td>
-                                <td><span class="badge bg-warning">1</span></td>
-                            </tr>
-                            <tr>
-                                <td>Floor 3</td>
-                                <td><span class="badge bg-success">6</span></td>
-                                <td><span class="badge bg-danger">5</span></td>
-                                <td><span class="badge bg-warning">1</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-        
-        $('#roomStatusContent').html(mockRoomStatus);
-    }, 1000);
+            `;
+            $('#roomStatusContent').html(roomStatusHtml);
+        },
+        error: function(xhr) {
+            $('#roomStatusContent').html(`
+                <div class="alert alert-danger">Failed to load room status. Please try again.</div>
+            `);
+        }
+    });
 }
 
 // Show time and date
 function updateDateTime() {
     const now = new Date();
     const options = {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
         day: 'numeric',
+        month: 'long',
+        year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        timeZone: 'Africa/Accra'
     };
-    
-    // You could add this to the header if needed
-    console.log(now.toLocaleDateString('en-US', options));
+    console.log(now.toLocaleDateString('en-GB', options));
 }
 
 updateDateTime();

@@ -185,7 +185,7 @@ footer {
     box-shadow: var(--hotel-shadow-lg);
 }
 
-/* Booking status indicators */
+/* Booking status indicators
 .table tr.table-warning {
     background-color: rgba(var(--bs-warning-rgb), 0.1) !important;
 }
@@ -193,6 +193,7 @@ footer {
 .table tr.table-info {
     background-color: rgba(var(--bs-info-rgb), 0.1) !important;
 }
+*/
 
 /* Search and filter enhancements */
 .search-input {

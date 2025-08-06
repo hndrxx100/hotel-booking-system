@@ -29,9 +29,12 @@
                             <p><strong>Current Room:</strong> {{ booking.room.room_number }} ({{ booking.room.category.name }})</p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Current Check-in:</strong> {{ booking.check_in.strftime('%B %d, %Y') }}</p>
-                            <p><strong>Current Check-out:</strong> {{ booking.check_out.strftime('%B %d, %Y') }}</p>
-                            <p><strong>Current Total:</strong> ${{ "%.2f"|format(booking.total_price) }}</p>
+                            <p><strong>Current Check-in:</strong> {{ booking.check_in.strftime('%d %B %Y') }}</p>
+                            <p><strong>Current Check-out:</strong> {{ booking.check_out.strftime('%d %B %Y') }}</p>
+                            <p><strong>Current Total:</strong> GH₵ {{ "%.2f"|format(booking.total_price) }}</p>
+                            {% if booking.modified_at %}
+                                <p><strong>Last Modified:</strong> {{ booking.modified_at.strftime('%d %B %Y %I:%M %p') }}</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -51,11 +54,12 @@
                 <div class="card-body">
                     <form method="POST">
                         {{ form.hidden_tag() }}
-                        
+
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 {{ form.check_in.label(class="form-label") }}
-                                {{ form.check_in(class="form-control", value=booking.check_in) }}
+                                <input type="text" class="form-control datepicker" name="check_in_display" value="{{ booking.check_in.strftime('%d %B %Y') }}" required>
+                                <input type="hidden" name="check_in" value="{{ booking.check_in.strftime('%Y-%m-%d') }}">
                                 {% if form.check_in.errors %}
                                     <div class="text-danger small">
                                         {% for error in form.check_in.errors %}{{ error }}{% endfor %}
@@ -64,7 +68,8 @@
                             </div>
                             <div class="col-md-6">
                                 {{ form.check_out.label(class="form-label") }}
-                                {{ form.check_out(class="form-control", value=booking.check_out) }}
+                                <input type="text" class="form-control datepicker" name="check_out_display" value="{{ booking.check_out.strftime('%d %B %Y') }}" required>
+                                <input type="hidden" name="check_out" value="{{ booking.check_out.strftime('%Y-%m-%d') }}">
                                 {% if form.check_out.errors %}
                                     <div class="text-danger small">
                                         {% for error in form.check_out.errors %}{{ error }}{% endfor %}
@@ -72,11 +77,11 @@
                                 {% endif %}
                             </div>
                         </div>
-                        
+
                         <div class="row g-3 mb-4">
                             <div class="col-12">
                                 {{ form.room_category.label(class="form-label") }}
-                                {{ form.room_category(class="form-select") }}
+                                {{ form.room_category(class="form-select", id="room_category") }}
                                 <div class="form-text">
                                     Leave as "Keep Current Room" to maintain your current room assignment, or select a different category to change room type.
                                 </div>
@@ -87,7 +92,7 @@
                                 {% endif %}
                             </div>
                         </div>
-                        
+
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
                             <strong>Important Notes:</strong>
@@ -98,7 +103,7 @@
                                 <li>Changes are subject to availability</li>
                             </ul>
                         </div>
-                        
+
                         <div class="d-flex gap-2 justify-content-end">
                             <a href="{{ url_for('booking_lookup') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left me-1"></i>Back
@@ -115,33 +120,96 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+{% endblock %}
+
 {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Set minimum date for check-in (today)
-    const today = new Date().toISOString().split('T')[0];
-    $('input[name="check_in"]').attr('min', today);
-    
-    // Update check-out minimum when check-in changes
-    $('input[name="check_in"]').on('change', function() {
-        const checkInDate = new Date(this.value);
-        const checkOutMin = new Date(checkInDate.getTime() + 86400000).toISOString().split('T')[0];
-        $('input[name="check_out"]').attr('min', checkOutMin);
-        
-        // Clear check-out if it's now invalid
-        const checkOutValue = $('input[name="check_out"]').val();
-        if (checkOutValue && checkOutValue <= this.value) {
-            $('input[name="check_out"]').val('');
+    // Initialize datepickers
+    $('.datepicker').datepicker({
+        format: 'dd mmmm yyyy',
+        autoclose: true,
+        todayHighlight: true,
+        startDate: new Date(),
+        orientation: 'bottom auto'
+    }).on('changeDate', function(e) {
+        const selectedDate = e.date;
+        const formattedDate = selectedDate.getFullYear() + '-' +
+                            ('0' + (selectedDate.getMonth() + 1)).slice(-2) + '-' +
+                            ('0' + selectedDate.getDate()).slice(-2);
+        const hiddenInput = $(this).siblings('input[type="hidden"]');
+        hiddenInput.val(formattedDate);
+
+        // Update check-out minimum when check-in changes
+        if ($(this).attr('name') === 'check_in_display') {
+            const checkOutPicker = $('input[name="check_out_display"]');
+            const minCheckOut = new Date(selectedDate.getTime() + 86400000);
+            checkOutPicker.datepicker('setStartDate', minCheckOut);
+
+            // Clear check-out if invalid
+            const checkOutValue = $('input[name="check_out"]').val();
+            if (checkOutValue && checkOutValue <= formattedDate) {
+                checkOutPicker.datepicker('setDate', null);
+                $('input[name="check_out"]').val('');
+            }
+
+            // Update room category dropdown
+            updateRoomDropdown();
         }
     });
-    
+
     // Set initial check-out minimum
     const initialCheckIn = $('input[name="check_in"]').val();
     if (initialCheckIn) {
         const checkInDate = new Date(initialCheckIn);
-        const checkOutMin = new Date(checkInDate.getTime() + 86400000).toISOString().split('T')[0];
-        $('input[name="check_out"]').attr('min', checkOutMin);
+        const minCheckOut = new Date(checkInDate.getTime() + 86400000);
+        $('input[name="check_out_display"]').datepicker('setStartDate', minCheckOut);
     }
+
+    // Function to update room category dropdown
+    function updateRoomDropdown() {
+        const checkIn = $('input[name="check_in"]').val();
+        const checkOut = $('input[name="check_out"]').val();
+        const bookingId = {{ booking.id|tojson }};
+
+        if (checkIn && checkOut) {
+            $.ajax({
+                url: '/api/available_rooms',
+                method: 'GET',
+                data: {
+                    check_in: checkIn,
+                    check_out: checkOut,
+                    exclude_booking_id: bookingId
+                },
+                success: function(data) {
+                    const select = $('#room_category');
+                    select.empty();
+                    select.append('<option value="0">Keep Current Room</option>');
+                    if (data.rooms && data.rooms.length > 0) {
+                        data.rooms.forEach(function(room) {
+                            select.append(
+                                `<option value="${room.category_id}">${room.category_name} - Room ${room.room_number}</option>`
+                            );
+                        });
+                    } else {
+                        select.append('<option value="" disabled>No available rooms</option>');
+                    }
+                },
+                error: function() {
+                    const select = $('#room_category');
+                    select.empty();
+                    select.append('<option value="0">Keep Current Room</option>');
+                    select.append('<option value="" disabled>Failed to load rooms</option>');
+                }
+            });
+        }
+    }
+
+    // Initial room dropdown population
+    updateRoomDropdown();
 });
 </script>
 {% endblock %}
